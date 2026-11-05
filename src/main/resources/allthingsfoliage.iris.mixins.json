@@ -1,0 +1,12 @@
+{
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.iris",
+	"plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.iris.IrisMixinPlugin",
+	"required": true,
+	"minVersion": "0.8",
+	"compatibilityLevel": "${java}",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"mixins": [],
+	"client": ["IrisRenderingPipelineAccessor", "ShaderCreatorMixin"]
+}

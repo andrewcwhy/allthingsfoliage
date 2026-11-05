@@ -1,0 +1,19 @@
+{
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
+	"required": true,
+	"minVersion": "0.8",
+	"compatibilityLevel": "${java}",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"mixins": [],
+	"client": [
+		"BerylShadowMixin",
+		"ClientLevelMixin",
+		"LevelExtractorMixin",
+		"SectionMeshSwapMixin",
+		"SodiumMeshSwapMixin",
+		"VulkanMeshSwapMixin",
+		"SwayProximityForceMixin"
+	]
+}

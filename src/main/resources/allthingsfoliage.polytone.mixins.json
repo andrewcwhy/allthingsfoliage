@@ -1,0 +1,12 @@
+{
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.polytone",
+	"plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.polytone.PolytoneMixinPlugin",
+	"required": false,
+	"minVersion": "0.8",
+	"compatibilityLevel": "${java}",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"mixins": [],
+	"client": ["ShadowMapRendererMixin", "ShadowCasterRendererMixin"]
+}

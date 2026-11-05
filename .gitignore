@@ -1,0 +1,21 @@
+.env
+.gradle
+.kotlin
+.cache/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+run/
+
+### Mac OS ###
+.DS_Store
+
+# Third-party mod jars used only for local dev runs
+devmods/
+versions/*/mods/
+versions/* mods/
+
+# Player reports, logs and screenshots: local only
+issues/
