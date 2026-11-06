@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import com.github.razorplay01.sway.client.SwayData;
 import com.github.razorplay01.sway.config.SwayConfig;
 import java.util.HashMap;
@@ -179,4 +177,3 @@ public final class SnowShakeParticles {
         return shape.isEmpty() ? 0.8 : shape.max(Direction.Axis.Y);
     }
 }
-//?}

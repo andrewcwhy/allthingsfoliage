@@ -40,8 +40,8 @@ deps.sway = "J9WbqmZ9"
 
 # NeoForge — Minecraft 26.3
 [neoforge."26.3"]
-deps.iris = "Ag5S66CF"           # Compile-only; not bundled.
+deps.iris = "Ag5S66CF"       # Compile-only; not bundled.
 deps.minecraft = "26.3"
-deps.neoforge = "26.3.0.26-beta"
-deps.sodium = "VHtnT9Q4"         # Compile-only; not bundled.
+deps.neoforge = "26.3.0.101"
+deps.sodium = "VHtnT9Q4"     # Compile-only; not bundled.
 deps.sway = "26eSF65d"

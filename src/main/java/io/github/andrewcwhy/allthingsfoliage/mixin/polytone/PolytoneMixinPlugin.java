@@ -1,12 +1,12 @@
-package net.karto.mc2.mc2_interactivefoliage.mixin.polytone;
-
-//? >=1.21.1 {
+package io.github.andrewcwhy.allthingsfoliage.mixin.polytone;
 
 //? fabric {
 import net.fabricmc.loader.api.FabricLoader;
 //?} else {
 /*import net.neoforged.fml.loading.FMLLoader;
-*///?}
+*/
+//?}
+
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -17,13 +17,14 @@ import java.util.Set;
 /** Applies the Polytone support only when Polytone is installed: every mixin here targets it. */
 public final class PolytoneMixinPlugin implements IMixinConfigPlugin {
 
-	//? fabric {
+//? fabric {
 	private static final boolean POLYTONE = FabricLoader.getInstance().isModLoaded("polytone");
-	//?} else {
-	/*// Mixin configs are read once the mod list is built, but before ModList exists.
+//?} else {
+/*	// Mixin configs are read once the mod list is built, but before ModList exists.
 	private static final boolean POLYTONE =
-			FMLLoader/^? if >1.21.7 {^/.getCurrent()/^?}^/.getLoadingModList().getModFileById("polytone") != null;
-	*///?}
+			FMLLoader.getCurrent().getLoadingModList().getModFileById("polytone") != null;
+*/
+//?}
 
 	@Override
 	public void onLoad(String mixinPackage) {
@@ -56,4 +57,3 @@ public final class PolytoneMixinPlugin implements IMixinConfigPlugin {
 	public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 	}
 }
-//?}

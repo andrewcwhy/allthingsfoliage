@@ -1,44 +1,26 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import com.github.razorplay01.sway.client.SwayData;
 import com.github.razorplay01.sway.client.SwayEngine;
 import com.github.razorplay01.sway.config.SwayConfig;
-//?} else {
-/*import com.mojang.blaze3d.buffers.GpuBuffer;
- */ //?}
+
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-//?} else {
-/*import com.mojang.blaze3d.shaders.UniformType;
- */ //?}
-import com.mojang.blaze3d.systems.RenderSystem;
-//? >=1.21.11 {
-//? >=26.3 {
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-//?}
-//? >=26.2 {
-//? >=26.3 {
-import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
-//?} else {
-/*import com.mojang.blaze3d.pipeline.BindGroupLayout;
- */ //?}
-//?}
-//? >=1.21.11 {
-//? >=26.3 {
-import com.mojang.renderpearl.api.pipeline.UniformType;
-//?}
-import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-//?} else {
-/*import com.mojang.blaze3d.platform.GlStateManager;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
-import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-*/ //?}
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+
+import com.mojang.renderpearl.api.pipeline.UniformType;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+
+import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+import org.lwjgl.system.MemoryStack;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -48,11 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-//? >=1.21.11 {
-import org.lwjgl.system.MemoryStack;
 
 /**
  * Hands Sway's plant pushes to the foliage shader, so plants near the player lean away from whoever walks
@@ -74,17 +51,13 @@ public final class GpuFoliageInteraction {
     /** The name of the uniform block the shader reads these pushes from. */
     static final String UNIFORM = "FoliageInteraction";
 
-    //? >=26.2 {
     /** From 26.2 a pipeline declares its uniforms in bind group layouts. */
     static final BindGroupLayout LAYOUT = BindGroupLayout.builder()
         .withUniform(UNIFORM, UniformType.UNIFORM_BUFFER)
         .build();
-    //?}
 
-    //? >=1.21.11 {
     private static final int BUFFER_SIZE = bufferSize();
     private static GpuBuffer buffer;
-    //?}
 
     /**
      * How many times wider an entity counts as when it pushes plants, along x and z. Its height is kept. Only
@@ -199,7 +172,6 @@ public final class GpuFoliageInteraction {
         return collectCells(camera);
     }
 
-    //? >=1.21.11 {
     /** Writes this frame's pushes. Render thread only, and before any render pass is opened. */
     static GpuBuffer upload(Vec3 camera) {
         int cellCount = update(camera);
@@ -224,7 +196,6 @@ public final class GpuFoliageInteraction {
         return buffer;
     }
 
-    //? >=26.3 {
     /**
      * The pushes as last written, or null before any were: for drawing the foliage again in the same frame, as into a
      * shader pack's shadow map, without moving the plants' springs a second time.
@@ -232,9 +203,6 @@ public final class GpuFoliageInteraction {
     static GpuBuffer uploaded() {
         return buffer;
     }
-
-    //?}
-    //?}
 
     /** Moves every plant's spring towards Sway's current push, or back to upright once Sway lets go. */
     private static void followSway(float delta) {
@@ -244,9 +212,7 @@ public final class GpuFoliageInteraction {
             cell.targetZ = 0.0F;
         }
         followForces(SWAY_FORCES);
-        //? <1.21.11 {
-        /*followForces(PLOT_FORCES);
-         */ //?}
+        
         stepSprings(delta);
     }
 
@@ -365,128 +331,6 @@ public final class GpuFoliageInteraction {
         }
     }
 
-    //? <1.21.11 {
-    /*/^*
-	 * The {@code FoliageInteraction} block laid out by hand, the same way std140 lays it out on newer versions: a
-	 * count, then vec4s from byte 16 on, the positions and then the forces.
-	 ^/
-	private static final int LEGACY_VEC4_START = 16;
-	private static final int LEGACY_BUFFER_SIZE = LEGACY_VEC4_START + (2 + MAX_CELLS * 2) * 16;
-
-	private static ByteBuffer legacyData;
-	private static int legacyBuffer;
-
-	/^*
-	 * Writes this frame's pushes into a uniform buffer and binds it where the foliage shader reads them. Render
-	 * thread only. Before 1.21.11 vanilla has no uniform buffers of its own, so this is plain OpenGL; the block
-	 * is too large for the loose uniforms a shader's JSON can declare.
-	 ^/
-	static void uploadLegacy(Vec3 camera, int binding) {
-		ByteBuffer data = legacyCells(camera);
-		if (legacyBuffer == 0) {
-			legacyBuffer = GlStateManager._glGenBuffers();
-			GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, legacyBuffer);
-			GL15.glBufferData(GL31.GL_UNIFORM_BUFFER, LEGACY_BUFFER_SIZE, GL15.GL_DYNAMIC_DRAW);
-		}
-		GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, legacyBuffer);
-		GL15.glBufferSubData(GL31.GL_UNIFORM_BUFFER, 0L, data);
-		GL30.glBindBufferBase(GL31.GL_UNIFORM_BUFFER, binding, legacyBuffer);
-	}
-
-	/^*
-	 * Sway's pushes on the plants of Sable's sub-levels, worked out again every frame. Sway looks for plants around
-	 * each entity where the entity is, and a sub-level's plants are kept somewhere else altogether, in its plot: so
-	 * the same is asked of Sway for an entity standing where this one would be inside the plot, and what it answers
-	 * is followed beside its own forces. The plants' places are the plot's, which are no plant's in the world.
-	 ^/
-	private static final Map<BlockPos, SwayData> PLOT_FORCES = new HashMap<>();
-	private static java.lang.reflect.Method processBlock;
-	private static boolean processBlockSought;
-	private static net.minecraft.world.entity.Entity standIn;
-
-	/^* Forgets last frame's pushes on the sub-levels' plants, before this frame's are worked out. ^/
-	static void beginPlotForces() {
-		PLOT_FORCES.clear();
-	}
-
-	/^*
-	 * Works out an entity's pushes on the plants its box reaches in a plot: the box as the sub-level's pose puts it
-	 * there, which for a sub-level lying on its side is the entity lying across the plot. Sway reads nothing of an
-	 * entity but its box while it does, so a stand-in that is in no level is given that box and handed to Sway's own
-	 * working-out of a block -- which is not part of its API, and is reached by name: without it the plants are not
-	 * pushed.
-	 ^/
-	static void pushPlot(net.minecraft.client.multiplayer.ClientLevel level, AABB box) {
-		try {
-			if (!processBlockSought) {
-				processBlockSought = true;
-				processBlock = SwayEngine.class.getDeclaredMethod("processBlock", BlockPos.MutableBlockPos.class,
-						net.minecraft.client.multiplayer.ClientLevel.class, net.minecraft.world.entity.Entity.class,
-						com.github.razorplay01.sway.api.behavior.context.SwayBehaviorContext.class, Map.class, float.class,
-						float.class);
-				processBlock.setAccessible(true);
-			}
-			if (processBlock == null) {
-				return;
-			}
-			if (standIn == null || standIn.level() != level) {
-				standIn = new net.minecraft.world.entity.Marker(net.minecraft.world.entity.EntityType.MARKER, level);
-			}
-			standIn.setPos((box.minX + box.maxX) * 0.5D, box.minY, (box.minZ + box.maxZ) * 0.5D);
-			standIn.setBoundingBox(box);
-			var context = new com.github.razorplay01.sway.api.behavior.context.SwayBehaviorContext(level, standIn,
-					SwayConfig.INSTANCE, 0.016F);
-			// Every block the box comes within Sway's reach of. Its own update looks around an entity's feet and well
-			// above them, for an entity standing; here the box may lie any way, so it is its whole length.
-			float radius = SwayConfig.INSTANCE.influenceRadius;
-			int reach = (int) Math.ceil(radius);
-			BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-			for (int x = (int) Math.floor(box.minX - reach); x <= (int) Math.floor(box.maxX + reach); x++) {
-				for (int z = (int) Math.floor(box.minZ - reach); z <= (int) Math.floor(box.maxZ + reach); z++) {
-					for (int y = (int) Math.floor(box.minY - reach); y <= (int) Math.floor(box.maxY + reach); y++) {
-						pos.set(x, y, z);
-						processBlock.invoke(null, pos, level, standIn, context, PLOT_FORCES, radius,
-								SwayConfig.INSTANCE.intensity);
-					}
-				}
-			}
-		} catch (ReflectiveOperationException | RuntimeException e) {
-			processBlock = null;
-			AllThingsFoliage.LOGGER.warn("Sway's forces can't be worked out for the plants of Sable's sub-levels; they sway "
-					+ "but are not pushed", e);
-		}
-	}
-
-	/^*
-	 * This frame's pushes laid out as the block of them is, in memory that stays where it is: for the uniform buffer
-	 * above, and for VulkanMod, which reads them from there itself. Render thread only.
-	 ^/
-	static ByteBuffer legacyCells(Vec3 camera) {
-		int cellCount = update(camera);
-		if (legacyData == null) {
-			legacyData = MemoryUtil.memCalloc(LEGACY_BUFFER_SIZE);
-		}
-		ByteBuffer data = legacyData;
-		data.putInt(0, cellCount);
-		putVec4(data, 0, CELL_BOUNDS[0], CELL_BOUNDS[1], CELL_BOUNDS[2], 0.0F);
-		putVec4(data, 1, CELL_BOUNDS[3], CELL_BOUNDS[4], CELL_BOUNDS[5], 0.0F);
-		for (int i = 0; i < MAX_CELLS; i++) {
-			int at = i * 4;
-			putVec4(data, 2 + i,
-					CELL_POSITIONS[at], CELL_POSITIONS[at + 1], CELL_POSITIONS[at + 2], CELL_POSITIONS[at + 3]);
-			putVec4(data, 2 + MAX_CELLS + i,
-					CELL_FORCES[at], CELL_FORCES[at + 1], CELL_FORCES[at + 2], CELL_FORCES[at + 3]);
-		}
-		return data;
-	}
-
-	private static void putVec4(ByteBuffer data, int vec4, float x, float y, float z, float w) {
-		int at = LEGACY_VEC4_START + vec4 * 16;
-		data.putFloat(at, x).putFloat(at + 4, y).putFloat(at + 8, z).putFloat(at + 12, w);
-	}
-	*/ //?}
-
-    //? >=1.21.11 {
     private static void putAll(Std140Builder data, float[] vectors) {
         for (int i = 0; i < vectors.length; i += 4) {
             data.putVec4(
@@ -509,6 +353,5 @@ public final class GpuFoliageInteraction {
         }
         return size.get();
     }
-    //?}
+    
 }
-//?}

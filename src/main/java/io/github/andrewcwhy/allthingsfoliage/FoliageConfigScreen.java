@@ -4,9 +4,7 @@ import com.github.razorplay01.sway.config.SwayConfig;
 import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageRenderer;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
-//? >=1.20.1 {
 import net.minecraft.client.gui.components.Checkbox;
-//?}
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -40,7 +38,7 @@ public class FoliageConfigScreen extends Screen {
     private static final int RESET_GAP = 4;
 
     private CycleButton<Boolean> interactionBtn;
-    //? >=1.20.1 {
+
     private PresetSlider presetSlider;
     private CycleButton<Boolean> rendererBtn;
     private GpuDistanceSlider gpuDistanceSlider;
@@ -49,11 +47,9 @@ public class FoliageConfigScreen extends Screen {
     private CycleButton<Boolean> wavingFoliageBtn;
     private WavingIntensitySlider wavingIntensitySlider;
     private Button resetWavingIntensityBtn;
-    //?}
-    //? >=1.20.1 {
-    private Checkbox wavingLeavesBox;
 
-    //?}
+    private Checkbox wavingLeavesBox;
+    private CycleButton<Boolean> targetAliveBtn;
 
     public FoliageConfigScreen(Screen parent) {
         super(Component.translatable("config.allthingsfoliage.title"));
@@ -84,16 +80,18 @@ public class FoliageConfigScreen extends Screen {
         // The switch, then the interaction's two sliders.
         int rows = 2;
         int extra = 0;
-        //? >=1.20.1 {
+
         // The preset, set apart from the options below it, then the renderer, the weather wind and the wind, each
         // beside its own setting.
         rows += 4;
         extra += 10;
-        //?}
-        //? >=1.20.1 {
+
         // The leaves' checkbox, under the wind.
         rows += 1;
-        //?}
+
+        // The target-alive switch, under the leaves' checkbox.
+        rows += 1;
+
         return 20 + (rows - 1) * spacing + extra + (spacing + 10) + 20;
     }
 
@@ -108,7 +106,6 @@ public class FoliageConfigScreen extends Screen {
         int right = cx + COLUMN_GAP / 2;
         int sliderWidth = COLUMN_WIDTH - RESET_WIDTH - RESET_GAP;
 
-        //? >=1.20.1 {
         // ── Preset, across both columns and set apart: the first thing to choose, the rest follows from it ──
         presetSlider = new PresetSlider(
             left,
@@ -119,19 +116,13 @@ public class FoliageConfigScreen extends Screen {
         this.addRenderableWidget(presetSlider);
 
         y += spacing + 10;
-        //?}
 
         // ── Interaction ON/OFF ─────────────────────────────────────────────────
         interactionBtn = CycleButton.booleanBuilder(
             Component.translatable("config.allthingsfoliage.on"),
             Component.translatable("config.allthingsfoliage.off"),
-            //? > 1.21.1 {
             config.enabled
-            //?}
         )
-            //? <=1.21.1 {
-            /*.withInitialValue(config.enabled)
-             */ //?}
             .create(
                 cx - FULL_WIDTH / 2,
                 y,
@@ -191,7 +182,6 @@ public class FoliageConfigScreen extends Screen {
         this.addRenderableWidget(resetRadiusBtn);
         updateInteractionOptions();
 
-        //? >=1.20.1 {
         y += spacing;
 
         // ── Renderer: the chunk mesh as always, or the mod's own on the GPU; beside it how far the GPU one reaches ──
@@ -199,13 +189,8 @@ public class FoliageConfigScreen extends Screen {
             // Written out rather than translated: the two read the same in every language.
             Component.literal("GPU"),
             Component.literal("CPU"),
-            //? >1.21.1 {
             FoliageSettings.gpuRenderer()
-            //?}
         )
-            //? <=1.21.1 {
-            /*.withInitialValue(FoliageSettings.gpuRenderer())
-             */ //?}
             .create(
                 left,
                 y,
@@ -232,13 +217,8 @@ public class FoliageConfigScreen extends Screen {
         weatherWindBtn = CycleButton.booleanBuilder(
             Component.translatable("config.allthingsfoliage.on"),
             Component.translatable("config.allthingsfoliage.off"),
-            //? >1.21.1 {
             FoliageSettings.weatherWind()
-            //?}
         )
-            //? <=1.21.1 {
-            /*.withInitialValue(FoliageSettings.weatherWind())
-             */ //?}
             .create(
                 left,
                 y,
@@ -267,13 +247,8 @@ public class FoliageConfigScreen extends Screen {
         wavingFoliageBtn = CycleButton.booleanBuilder(
             Component.translatable("config.allthingsfoliage.on"),
             Component.translatable("config.allthingsfoliage.off"),
-            //? >1.21.1 {
             FoliageSettings.wavingFoliage()
-            //?}
         )
-            //? <=1.21.1 {
-            /*.withInitialValue(FoliageSettings.wavingFoliage())
-             */ //?}
             .create(
                 left,
                 y,
@@ -312,7 +287,6 @@ public class FoliageConfigScreen extends Screen {
         // ── Whether leaves wave too, with the wind ──────────────────────────────
         // Switching them rebuilds the near sections holding leaves: whether a leaf is drawn by the chunk mesh or the
         // renderer changes there.
-        //? >=1.21.1 {
         wavingLeavesBox = Checkbox.builder(
             Component.translatable("config.allthingsfoliage.waving_leaves"),
             this.font
@@ -326,18 +300,31 @@ public class FoliageConfigScreen extends Screen {
             .build();
         // Centred across both columns, as the interaction's switch is: the box and its text are as wide as the text.
         wavingLeavesBox.setX(cx - wavingLeavesBox.getWidth() / 2);
-        //?} else {
-        /*// Before 1.20.3 a checkbox is built whole, as wide as it is told, and only says it was pressed: a 20 pixel box,
-		// then its text.
-		Component wavingLeavesLabel = Component.translatable("config.allthingsfoliage.waving_leaves");
-		int wavingLeavesWidth = 20 + 4 + this.font.width(wavingLeavesLabel);
-		wavingLeavesBox = new WavingLeavesCheckbox(cx - wavingLeavesWidth / 2, y, wavingLeavesWidth, wavingLeavesLabel,
-				FoliageSettings.wavingLeaves());
-		*/ //?}
+
         this.addRenderableWidget(wavingLeavesBox);
         updateGpuOptions();
         updatePreset();
-        //?}
+
+        y += spacing;
+
+        // ── Whether entities that have died can still be targeted ───────────────
+        // Not part of any preset: it changes how combat feels, not what the mod costs.
+        targetAliveBtn = CycleButton.booleanBuilder(
+            Component.translatable("config.allthingsfoliage.on"),
+            Component.translatable("config.allthingsfoliage.off"),
+            FoliageSettings.targetAliveOnly()
+        )
+            .create(
+                cx - FULL_WIDTH / 2,
+                y,
+                FULL_WIDTH,
+                20,
+                Component.translatable(
+                    "config.allthingsfoliage.target_alive_only"
+                ),
+                (btn, val) -> FoliageSettings.setTargetAliveOnly(val)
+            );
+        this.addRenderableWidget(targetAliveBtn);
 
         y += spacing + 10;
 
@@ -346,18 +333,14 @@ public class FoliageConfigScreen extends Screen {
             Button.builder(
                 Component.translatable("config.allthingsfoliage.save"),
                 btn -> {
-                    //? >=1.20.1 {
                     // A preset picked just before saving is applied first: it sets Sway's switch too.
                     applyPreset();
                     applyGpuDistance();
                     FoliageSettings.save();
-                    //?}
+
                     SwayConfig.save();
-                    //? >=26.2{
+
                     this.minecraft.setScreenAndShow(parent);
-                    //?} else{
-                    /*this.minecraft.setScreen(parent);
-                     */ //?}
                 }
             )
                 .bounds(cx - FULL_WIDTH / 2, y, FULL_WIDTH, 20)
@@ -367,39 +350,15 @@ public class FoliageConfigScreen extends Screen {
 
     @Override
     public void onClose() {
-        //? >=1.20.1 {
         applyPreset();
         applyGpuDistance();
         FoliageSettings.save();
-        //?}
+
         SwayConfig.save();
-        //? >=26.2{
+
         this.minecraft.setScreenAndShow(parent);
-        //?} else{
-        /*this.minecraft.setScreen(parent);
-         */ //?}
     }
 
-    //? <= 1.21.11 {
-    /*@Override
-	public void render(
-			net.minecraft.client.gui.GuiGraphics graphics,
-			int mouseX, int mouseY, float delta
-	) {
-		//? <1.21.1 {
-		/^// Before 1.20.2 a screen draws no background of its own: this one dims the world behind it, or shows the dirt
-		// background from the title screen, as vanilla's option screens do.
-		this.renderBackground(graphics);
-		^///?}
-		super.render(graphics, mouseX, mouseY, delta);
-		graphics.drawCenteredString(
-				this.font, this.title,
-				this.width / 2, topOfOptions() - 20,
-				0xFFFFFF
-		);
-	}
-	*/ //?}
-    //? > 1.21.11 {
     @Override
     public void extractRenderState(
         net.minecraft.client.gui.GuiGraphicsExtractor graphics,
@@ -416,8 +375,6 @@ public class FoliageConfigScreen extends Screen {
             0xFFFFFF
         );
     }
-
-    //?}
 
     /**
      * Where a value sits on a slider that holds its default in the middle: the left half runs down to the
@@ -575,7 +532,6 @@ public class FoliageConfigScreen extends Screen {
         }
     }
 
-    //? >=1.20.1 {
     /**
      * The default sits in the middle of the slider: the left half runs down to the minimum and the right half
      * up to the maximum, so weaker and stronger each get half the travel.
@@ -617,7 +573,7 @@ public class FoliageConfigScreen extends Screen {
             resetWavingIntensityBtn.visible =
                 wind && !FoliageSettings.isDefaultWavingIntensity();
         }
-        //? >=1.20.1 {
+
         if (wavingLeavesBox != null) {
             wavingLeavesBox.visible = wind;
             // The game draws Fast leaves solid, so where the renderer cannot draw them so too they only wave with Fancy
@@ -635,7 +591,6 @@ public class FoliageConfigScreen extends Screen {
                       )
             );
         }
-        //?}
     }
 
     /**
@@ -789,19 +744,12 @@ public class FoliageConfigScreen extends Screen {
             Component name =
                 shown != null
                     ? Component.translatable(shown.translationKey())
-                    : //? >=1.21.11 {
-                      Component.translatable("options.graphics.custom");
-            //?} else {
-            /*: Component.translatable("item.minecraft.firework_star.custom_color");
-             */ //?}
+                    : Component.translatable("options.graphics.custom");
+
             setMessage(
                 Component.translatable(
                     "options.generic_value",
-                    //? >=1.21.11 {
                     Component.translatable("options.graphics.preset"),
-                    //?} else {
-                    /*Component.translatable("createWorld.customize.presets"),
-                     */ //?}
                     name
                 )
             );
@@ -941,26 +889,5 @@ public class FoliageConfigScreen extends Screen {
             updateMessage();
         }
     }
-    //?}
 
-    //? <1.21.1 {
-    /*/^*
-	 * The leaves' checkbox before 1.20.3, which only says it was pressed. A class of its own rather than an anonymous one:
-	 * an anonymous subclass takes the constructor's parameter names from the mappings, and those of this version's
-	 * Checkbox clash when compiled on newer JDKs.
-	 ^/
-	private static final class WavingLeavesCheckbox extends Checkbox {
-
-		WavingLeavesCheckbox(int x, int y, int width, Component label, boolean selected) {
-			super(x, y, width, 20, label, selected);
-		}
-
-		@Override
-		public void onPress() {
-			super.onPress();
-			FoliageSettings.setWavingLeaves(selected());
-			GpuFoliageRenderer.foliageListChanged();
-		}
-	}
-	*/ //?}
 }

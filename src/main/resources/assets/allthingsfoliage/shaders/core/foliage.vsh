@@ -23,8 +23,8 @@ layout(location = 3) in ivec2 UV2;
 layout(location = 4) in float SwayCell;
 layout(location = 5) in float SwayWeights;
 
-#include <mc2_interactivefoliage:foliage_uniforms.glsl>
-#include <mc2_interactivefoliage:sway.glsl>
+#include <allthingsfoliage:foliage_uniforms.glsl>
+#include <allthingsfoliage:sway.glsl>
 
 uniform sampler2D Sampler2;
 

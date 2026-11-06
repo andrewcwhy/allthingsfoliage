@@ -1,38 +1,31 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-//?}
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-//? <1.21.11 {
-/*import net.minecraft.client.resources.model.BakedModel;
-
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.WeakHashMap;
-*/ //?}
-//? >=26.1.2 {
-import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.util.RandomSource;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 /**
  * Snow! Real Magic lets snow settle on plants: the plant's block becomes its snow layer block, and the plant lives on
@@ -203,126 +196,6 @@ public final class SnowRealMagicCompat {
         return plant != null ? plant : state;
     }
 
-    //? <1.21.11 {
-    /*private static final String SNOW_VARIANT_MODEL = "snownee.snow.client.model.SnowVariantModel";
-	private static final String SNOW_CLIENT_CONFIG = "snownee.snow.client.SnowClientConfig";
-	/^*
-	 * The fields the wrappers around a plant's model keep what they wrap in: Fabric's forwarding model (Snow! Real
-	 * Magic's own wrappers, and the mod's on Fabric), Sway's, and Forge's (the mod's on Forge).
-	 ^/
-	private static final String[] WRAPPED_FIELDS = {"wrapped", "parent", "originalModel"};
-	private static Field snowyVariantModel;
-	private static Field snowVariantsOn;
-	private static boolean variantsUnknown;
-	/^*
-	 * Each plant model's snowy variant, or NO_VARIANT where it has none, found once: the wrappers are walked by
-	 * reflection. Weak, so the models of a resource reload before go with it -- which a value holding its own key would
-	 * stop, hence the marker.
-	 ^/
-	private static final Map<BakedModel, Object> VARIANTS = new WeakHashMap<>();
-	private static final Object NO_VARIANT = new Object();
-
-	/^*
-	 * The model Snow! Real Magic draws a plant with where snow touches it, as the chunk mesh shows it: its snowy
-	 * variant, for the plant held in the snow and for the top half of a tall plant standing on it. The plant's own model
-	 * where there is none, or where the player has switched the snowy variants off.
-	 ^/
-	static BakedModel snowyVariant(BakedModel model, BlockState state, BlockGetter level, BlockPos pos, boolean inSnow) {
-		if (!inSnow && !standsOnSnow(level, pos, state)) {
-			return model;
-		}
-		BakedModel variant = snowyVariantOf(model);
-		return variant != null ? variant : model;
-	}
-
-	/^*
-	 * The snowy variant of a plant's model, or null where it has none or the player has switched them off. Snow! Real
-	 * Magic keeps it in a wrapper of its own around the plant's model, found among the wrappers around it -- the mod's,
-	 * Sway's, Snow! Real Magic's.
-	 ^/
-	public static BakedModel snowyVariantOf(BakedModel model) {
-		if (CONTAINED == null || variantsUnknown) {
-			return null;
-		}
-		try {
-			if (snowVariantsOn == null) {
-				ClassLoader loader = SnowRealMagicCompat.class.getClassLoader();
-				snowyVariantModel = Class.forName(SNOW_VARIANT_MODEL, false, loader).getDeclaredField("variantModel");
-				snowyVariantModel.setAccessible(true);
-				snowVariantsOn = Class.forName(SNOW_CLIENT_CONFIG, false, loader).getField("snowVariants");
-			}
-			if (!snowVariantsOn.getBoolean(null)) {
-				return null;
-			}
-			Object known = VARIANTS.get(model);
-			if (known != null) {
-				return known == NO_VARIANT ? null : (BakedModel) known;
-			}
-			BakedModel found = null;
-			Object current = model;
-			for (int depth = 0; depth < 8 && current != null; depth++) {
-				if (current.getClass().getName().equals(SNOW_VARIANT_MODEL)) {
-					found = (BakedModel) snowyVariantModel.get(current);
-					break;
-				}
-				current = wrappedBy(current);
-			}
-			VARIANTS.put(model, found != null ? found : NO_VARIANT);
-			return found;
-		} catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-			variantsUnknown = true;
-			AllThingsFoliage.LOGGER.warn("Could not find Snow! Real Magic's snowy plant models: plants in its snow are drawn "
-					+ "without snow", e);
-			return null;
-		}
-	}
-
-	/^* What a wrapper around a model wraps, or null for a model that wraps nothing this knows of. ^/
-	private static Object wrappedBy(Object wrapper) throws IllegalAccessException {
-		for (Class<?> type = wrapper.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
-			for (String name : WRAPPED_FIELDS) {
-				Field field;
-				try {
-					field = type.getDeclaredField(name);
-				} catch (NoSuchFieldException e) {
-					continue;
-				}
-				if (BakedModel.class.isAssignableFrom(field.getType())) {
-					field.setAccessible(true);
-					Object inner = field.get(wrapper);
-					return inner != wrapper ? inner : null;
-				}
-			}
-		}
-		return null;
-	}
-
-	//? forge {
-	/^private static Object drawnInSnowProperty;
-	private static boolean drawnInSnowUnknown;
-
-	/^¹*
-	 * Whether a plant's model is being drawn inside Snow! Real Magic's snow: it then draws the plant through the plant's
-	 * own model, handed its snow's model data, which carries its options.
-	 ¹^/
-	public static boolean drawnInSnow(net.minecraftforge.client.model.data.ModelData data) {
-		if (CONTAINED == null || drawnInSnowUnknown || data == null) {
-			return false;
-		}
-		try {
-			if (drawnInSnowProperty == null) {
-				drawnInSnowProperty = Class.forName(SNOW_BLOCK_ENTITY, false, SnowRealMagicCompat.class.getClassLoader())
-						.getField("OPTIONS").get(null);
-			}
-			return data.has((net.minecraftforge.client.model.data.ModelProperty<?>) drawnInSnowProperty);
-		} catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-			drawnInSnowUnknown = true;
-			return false;
-		}
-	}
-	^///?}
-	*/ //?}
-
     /**
      * Whether Snow! Real Magic draws the plant at this position snowy, as the chunk mesh shows it: a plant held in its
      * snow (the level has the snow there, the plant being drawn from inside it), or the top half of a tall plant
@@ -340,7 +213,6 @@ public final class SnowRealMagicCompat {
         );
     }
 
-    //? >=26.1.2 {
     private static final String SNOW_CLIENT_CONFIG_26 =
         "snownee.snow.client.SnowClientConfig";
     /** The part Snow! Real Magic bakes for a model with a snowy variant: its normal and its snowy part together. */
@@ -465,9 +337,9 @@ public final class SnowRealMagicCompat {
             }
         }
 
-        //? neoforge {
-        /*@Override
-		public void collectParts(net.minecraft.client.renderer.block.BlockAndTintGetter level, BlockPos pos,
+        @Override
+//? neoforge {
+/*		public void collectParts(net.minecraft.client.renderer.block.BlockAndTintGetter level, BlockPos pos,
 				BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
 			List<BlockStateModelPart> own = new ArrayList<>();
 			parent.collectParts(level, pos, state, random, own);
@@ -475,9 +347,10 @@ public final class SnowRealMagicCompat {
 				parts.add(snowyPart(part));
 			}
 		}
-		*/ //?}
 
         @Override
+*/
+//?}
         public Material.Baked particleMaterial() {
             return parent.particleMaterial();
         }
@@ -487,8 +360,6 @@ public final class SnowRealMagicCompat {
             return parent.materialFlags();
         }
     }
-
-    //?}
 
     /** Whether this is the top half of a tall plant whose lower half is held in Snow! Real Magic's snow. */
     public static boolean standsOnSnow(

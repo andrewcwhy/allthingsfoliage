@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.mixin;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.gpu.VulkanBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -39,4 +37,3 @@ public abstract class VulkanMeshSwapMixin {
         VulkanBridge.onSectionUpdated(result);
     }
 }
-//?}

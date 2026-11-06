@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
 import java.lang.reflect.Field;
 
@@ -38,11 +36,9 @@ final class IrisVertexExtension {
         Field renderingLevel = null;
         // Before 1.21.1 Iris has no way out, and needs none: it widens buffers exactly while a shader pack is loaded, and
         // while one is the renderer only meshes to draw through it.
-        //? >=1.21.1 {
+        
         boolean hasWayOut = true;
-        //?} else {
-        /*boolean hasWayOut = false;
-         */ //?}
+        
         if (hasWayOut && AllThingsFoliage.xplat().isModLoaded("iris")) {
             try {
                 Field field = Class.forName(IMMEDIATE_STATE).getField(
@@ -127,4 +123,3 @@ final class IrisVertexExtension {
         }
     }
 }
-//?}

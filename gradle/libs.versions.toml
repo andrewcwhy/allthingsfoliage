@@ -1,21 +1,22 @@
 [versions]
-stonecutter = "0.9.2"
-stonecutter-postprocess = "2.1-beta.8"
-mod-publish = "2.1.1"
+devtools-ksp = "2.3.12"
 dotenv-gradle = "4.0.0"
 fabric-loom = "1.16-SNAPSHOT"
-neoforge-moddev = "2.0.141"
-foojay = "1.0.0"
-devtools-ksp = "2.2.10-2.0.2"
-kotlin-jvm = "2.2.10"
 fletching-table = "0.1.0-alpha.22"
-moulberry-mixinconstraints = "1.1.0"
-vanniktech-maven-publish = "0.35.0"
+foojay = "1.0.0"
+kotlin-jvm = "2.4.21"
 mixin = "0.8.5"
-serialization-json = "1.7.3"
+mod-publish = "2.2.1"
+moulberry-mixinconstraints = "1.1.0"
+neoforge-moddev = "2.0.148"
+serialization-json = "1.11.0"
 serialization-toml = "0.6.0"
+stonecutter = "0.9.8"
+stonecutter-postprocess = "2.1-beta.8"
+vanniktech-maven-publish = "0.35.0"
 
 [libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-jvm" }
 kikugie-postprocess = { module = "dev.kikugie:postprocess", version.ref = "stonecutter-postprocess" }
 mod-publish-plugin = { module = "me.modmuss50:mod-publish-plugin", version.ref = "mod-publish" }
 kikugie-stonecutter = { module = "dev.kikugie:stonecutter", version.ref = "stonecutter" }
@@ -30,11 +31,9 @@ serialization-toml = { module = "dev.eav.tomlkt:tomlkt", version.ref = "serializ
 stonecutter = { id = "dev.kikugie.stonecutter", version.ref = "stonecutter" }
 dotenv = { id = "co.uzzu.dotenv.gradle", version.ref = "dotenv-gradle" }
 fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
-fabric-loom-remap = { id = "net.fabricmc.fabric-loom-remap", version.ref = "fabric-loom" }
 neoforged-moddev = { id = "net.neoforged.moddev", version.ref = "neoforge-moddev" }
 jsonlang-postprocess = { id = "dev.kikugie.postprocess.jsonlang", version.ref = "stonecutter-postprocess" }
 mod-publish-plugin = { id = "me.modmuss50.mod-publish-plugin", version.ref = "mod-publish" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "devtools-ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-jvm" }
 fletching-table = { id = "dev.kikugie.fletching-table", version.ref = "fletching-table" }
-legacyforge-moddev = { id = "net.neoforged.moddev.legacyforge", version.ref = "neoforge-moddev" }

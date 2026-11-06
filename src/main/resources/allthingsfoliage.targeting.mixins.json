@@ -1,0 +1,15 @@
+{
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.targeting",
+	"required": true,
+	"minVersion": "0.8",
+	"compatibilityLevel": "${java}",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"mixins": [],
+	"client": [
+		"LocalPlayerPickMixin",
+		"MinecraftAttackMixin",
+		"MultiPlayerGameModeAccessor"
+	]
+}

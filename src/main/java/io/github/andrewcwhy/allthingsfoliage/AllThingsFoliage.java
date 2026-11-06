@@ -2,13 +2,14 @@ package io.github.andrewcwhy.allthingsfoliage;
 
 import com.github.razorplay01.sway.registry.SwayRegistry;
 import io.github.andrewcwhy.allthingsfoliage.platform.Platform;
-//? fabric {
-import io.github.andrewcwhy.allthingsfoliage.platform.fabric.FabricPlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//? fabric {
+import io.github.andrewcwhy.allthingsfoliage.platform.fabric.FabricPlatform;
 //?} else {
-/*import io.github.andrewcwhy.allthingsfoliage.platform.neoforge.NeoforgePlatform;*/
+/*import io.github.andrewcwhy.allthingsfoliage.platform.neoforge.NeoforgePlatform;
+*/
 //?}
 
 @SuppressWarnings("LoggingSimilarMessage")
@@ -69,10 +70,13 @@ public class AllThingsFoliage {
     }
 
     private static Platform createPlatformInstance() {
-        //? fabric {
+        
+//? fabric {
         return new FabricPlatform();
-        //?} else {
-        /*return new NeoforgePlatform();*/
-        //?}
+//?} else {
+/*        return new NeoforgePlatform();
+*/
+//?}
+        
     }
 }

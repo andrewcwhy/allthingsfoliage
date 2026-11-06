@@ -1,8 +1,7 @@
-package net.karto.mc2.mc2_interactivefoliage.mixin.blockgetter;
-
-//? neoforge && >=26.1.2 {
-
-/*import org.spongepowered.asm.mixin.Mixin;
+package io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter;
+//? neoforge {
+/*
+import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 
 /^*
@@ -17,4 +16,5 @@ import org.spongepowered.asm.mixin.Pseudo;
 }, remap = false)
 public abstract class LevelViewBlockGetterMixin {
 }
-*///?}
+*/
+//?}

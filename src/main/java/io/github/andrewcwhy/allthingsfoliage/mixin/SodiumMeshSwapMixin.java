@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.mixin;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.gpu.SodiumBridge;
 import java.util.Collection;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,17 +23,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Sodium is optional, and not on the compile classpath: the target is named, and does nothing when it is absent.
  */
 @Pseudo
-//? >=1.21.1 {
+
 @Mixin(
     targets = "net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegionManager",
     remap = false
 )
-//?} else {
-/*@Mixin(targets = "me.jellysquid.mods.sodium.client.render.chunk.region.RenderRegionManager", remap = false)
- */ //?}
+
 public abstract class SodiumMeshSwapMixin {
 
-    //? >=26.2 {
     @Inject(
         method = "uploadResults(Ljava/util/Collection;Lnet/caffeinemc/mods/sodium/client/render/chunk/UniformBufferManager;)V",
         at = @At("RETURN"),
@@ -49,25 +44,5 @@ public abstract class SodiumMeshSwapMixin {
     ) {
         SodiumBridge.onResultsUploaded(results);
     }
-    //?} elif >=26.1.2 {
-    /*@Inject(method = "uploadResults(Lnet/caffeinemc/mods/sodium/client/gl/device/CommandList;Ljava/util/Collection;Lnet/caffeinemc/mods/sodium/client/render/chunk/UniformBufferManager;)V",
-			at = @At("RETURN"), require = 0, remap = false)
-	private void mc2$foliageChunkMeshesSwapped(@Coerce Object commandList, Collection<?> results, @Coerce Object uniforms,
-			CallbackInfo ci) {
-		SodiumBridge.onResultsUploaded(results);
-	}
-	*/ //?} elif >=1.21.1 {
-    /*@Inject(method = "uploadResults(Lnet/caffeinemc/mods/sodium/client/gl/device/CommandList;Ljava/util/Collection;)V",
-			at = @At("RETURN"), require = 0, remap = false)
-	private void mc2$foliageChunkMeshesSwapped(@Coerce Object commandList, Collection<?> results, CallbackInfo ci) {
-		SodiumBridge.onResultsUploaded(results);
-	}
-	*/ //?} else {
-    /*@Inject(method = "uploadMeshes(Lme/jellysquid/mods/sodium/client/gl/device/CommandList;Ljava/util/Collection;)V",
-			at = @At("RETURN"), require = 0, remap = false)
-	private void mc2$foliageChunkMeshesSwapped(@Coerce Object commandList, Collection<?> results, CallbackInfo ci) {
-		SodiumBridge.onResultsUploaded(results);
-	}
-	*/ //?}
+    
 }
-//?}

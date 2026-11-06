@@ -1,5 +1,4 @@
 package io.github.andrewcwhy.allthingsfoliage.platform.fabric;
-
 //? fabric {
 
 import io.github.andrewcwhy.allthingsfoliage.platform.Platform;

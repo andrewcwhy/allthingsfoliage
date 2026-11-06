@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import com.github.razorplay01.sway.api.SwayAPI;
 import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
@@ -14,23 +12,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.LongConsumer;
-//? >=26.1.2 {
+
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-//?} else {
-/*import net.minecraft.world.level.BlockAndTintGetter;
- */ //?}
-//? >=26.1.2 {
+
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-//?} elif >=1.21.11 {
-/*import net.minecraft.client.renderer.block.model.BlockStateModel;
- */ //?} else {
-/*import net.minecraft.client.resources.model.BakedModel;
- */ //?}
-//? >=1.21.11 {
+
 import net.minecraft.client.renderer.chunk.RenderSectionRegion;
-//?} else {
-/*import net.minecraft.client.renderer.chunk.RenderChunkRegion;
- */ //?}
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,14 +47,10 @@ public final class GpuFoliageSplit {
      * {@code WorldSlice} in its old package before. Null without Sodium, where vanilla's own region is the only
      * snapshot there is.
      */
-    //? >=1.21.1 {
+    
     private static final Class<?> SODIUM_LEVEL_SLICE = findClass(
         "net.caffeinemc.mods.sodium.client.world.LevelSlice"
     );
-
-    //?} else {
-    /*private static final Class<?> SODIUM_LEVEL_SLICE = findClass("me.jellysquid.mods.sodium.client.world.WorldSlice");
-     */ //?}
 
     /** The chunks around the player whose foliage the GPU renderer draws. Replaced whole, never edited. */
     private record Area(int centreX, int centreZ, int radius) {
@@ -248,23 +232,15 @@ public final class GpuFoliageSplit {
      * geometry the GPU is about to move again. Meshing goes through these instead: they sit inside Sway's
      * wrapper and hand over plain geometry.
      */
-    //? >=1.21.11 {
+    
     private static final Map<BlockState, BlockStateModel> GPU_MODELS =
         new IdentityHashMap<>();
-    //?} else {
-    /*// Before 1.21.11 a block's model is a BakedModel.
-	private static final Map<BlockState, BakedModel> GPU_MODELS = new IdentityHashMap<>();
-	*/ //?}
 
     /**
      * Which blocks are foliage now, found on first use and forgotten when a whitelist group is switched: read by the
      * chunk builders' threads too, which see it whole or not at all.
      */
     private static volatile Set<Block> foliage;
-
-    //? forge {
-    /*private static final String EMBEDDIUM_SLICE_VIEW = "org.embeddedt.embeddium.render.world.WorldSliceLocal";
-     */ //?}
 
     private GpuFoliageSplit() {}
 
@@ -274,16 +250,9 @@ public final class GpuFoliageSplit {
      * piston, a falling block, the GPU renderer meshing its own sections -- always gets the full geometry.
      */
     public static boolean leaveToGpu(BlockAndTintGetter level, BlockPos pos) {
-        //? >=1.21.11 {
+        
         boolean chunkBuild = level instanceof RenderSectionRegion;
-        //?} else {
-        /*boolean chunkBuild = level instanceof RenderChunkRegion;
-         */ //?}
-        //? forge {
-        /*// Embeddium hands a model a view of its level snapshot, a class it makes up as the game runs, rather than the
-		// snapshot itself, so it is known by name.
-		chunkBuild = chunkBuild || EMBEDDIUM_SLICE_VIEW.equals(level.getClass().getName());
-		*/ //?}
+
         if (
             !chunkBuild &&
             (SODIUM_LEVEL_SLICE == null ||
@@ -584,7 +553,6 @@ public final class GpuFoliageSplit {
         return true;
     }
 
-    //? >=1.21.11 {
     /** Remembers a model the mod wrapped, so the renderer can mesh from it. */
     public static void registerGpuModel(
         BlockState state,
@@ -601,19 +569,6 @@ public final class GpuFoliageSplit {
         BlockStateModel model = GPU_MODELS.get(state);
         return model == null ? fallback : model;
     }
-
-    //?} else {
-    /*/^* Remembers a model the mod wrapped, so the renderer can mesh from it. ^/
-	public static void registerGpuModel(BlockState state, BakedModel model) {
-		GPU_MODELS.put(state, model);
-	}
-
-	/^* The model to mesh this block from: the one the mod wrapped where there is one, or vanilla's. ^/
-	static BakedModel modelFor(BlockState state, BakedModel fallback) {
-		BakedModel model = GPU_MODELS.get(state);
-		return model == null ? fallback : model;
-	}
-	*/ //?}
 
     /** Render thread: the section was unloaded, and its next build has to be recorded afresh. */
     static void forgetSection(long sectionKey) {
@@ -832,4 +787,3 @@ public final class GpuFoliageSplit {
         }
     }
 }
-//?}

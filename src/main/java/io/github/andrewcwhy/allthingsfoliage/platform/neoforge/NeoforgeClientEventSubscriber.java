@@ -1,8 +1,7 @@
 package io.github.andrewcwhy.allthingsfoliage.platform.neoforge;
-
 //? neoforge {
-
-/*import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+/*
+import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
 import io.github.andrewcwhy.allthingsfoliage.gpu.SnowShakeParticles;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -37,4 +36,5 @@ public class NeoforgeClientEventSubscriber {
         SnowShakeParticles.tick();
     }
 }
-*/ //?}
+*/
+//?}

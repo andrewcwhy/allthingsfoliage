@@ -1,5 +1,4 @@
 package io.github.andrewcwhy.allthingsfoliage.platform.fabric;
-
 //? fabric {
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;

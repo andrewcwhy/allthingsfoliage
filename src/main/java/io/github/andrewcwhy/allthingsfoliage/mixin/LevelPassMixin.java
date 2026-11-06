@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.mixin;
 
-//? >=26.3 {
-
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
@@ -65,4 +63,3 @@ public abstract class LevelPassMixin {
         GpuFoliageRenderer.drawIntoLevelPass(renderPass);
     }
 }
-//?}

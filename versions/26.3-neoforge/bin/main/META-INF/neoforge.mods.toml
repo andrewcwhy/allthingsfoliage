@@ -1,0 +1,54 @@
+modLoader = "javafml"
+loaderVersion = "[2,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/andrewcwhy/allthingsfoliage/issues"
+
+[dependencies]
+
+[[dependencies.allthingsfoliage]]
+modId = "minecraft"
+side = "BOTH"
+versionRange = "[26.3]"
+type = "required"
+ordering = "NONE"
+
+[[dependencies.allthingsfoliage]]
+modId = "neoforge"
+side = "BOTH"
+versionRange = "[26.3.0.101,)"
+type = "required"
+ordering = "NONE"
+
+[[dependencies.allthingsfoliage]]
+modId = "sway"
+side = "BOTH"
+versionRange = "[1,)"
+type = "required"
+ordering = "AFTER"
+
+[[mods]]
+modId = "allthingsfoliage"
+displayName = "All Things Foliage"
+version = "0.1.0"
+displayURL = "https://github.com/andrewcwhy/allthingsfoliage"
+modUrl = "https://github.com/andrewcwhy/allthingsfoliage"
+iconFile = "allthingsfoliage:icon.png"
+iconBlur = true
+authors = "andrewcwhy"
+credits = "andrewcwhy"
+description = "Physics-based visual interaction between entities and foliage blocks."
+
+[[mixins]]
+config = "allthingsfoliage.gpu.mixins.json"
+
+[[mixins]]
+config = "allthingsfoliage.iris.mixins.json"
+
+[[mixins]]
+config = "allthingsfoliage.blockgetter.mixins.json"
+
+[[mixins]]
+config = "allthingsfoliage.pass.mixins.json"
+
+[[accessTransformers]]
+file = "aw/26.3.cfg"

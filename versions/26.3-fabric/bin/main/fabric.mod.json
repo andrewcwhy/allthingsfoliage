@@ -1,0 +1,52 @@
+{
+    "schemaVersion": 1,
+    "id": "allthingsfoliage",
+    "name": "All Things Foliage",
+    "version": "0.1.0",
+    "authors": [
+        "andrewcwhy"
+    ],
+    "contributors": [],
+    "contact": {
+        "sources": "https://github.com/andrewcwhy/allthingsfoliage",
+        "issues": "https://github.com/andrewcwhy/allthingsfoliage/issues",
+        "homepage": "https://github.com/andrewcwhy/allthingsfoliage"
+    },
+    "custom": {},
+    "description": "Physics-based visual interaction between entities and foliage blocks.",
+    "icon": "assets/allthingsfoliage/icon.png",
+    "license": "MIT",
+    "environment": "*",
+    "accessWidener": "aw/26.3.accesswidener",
+    "entrypoints": {
+        "main": [
+            "io.github.andrewcwhy.allthingsfoliage.platform.fabric.FabricEntrypoint"
+        ],
+        "client": [
+            "io.github.andrewcwhy.allthingsfoliage.platform.fabric.FabricClientEntrypoint"
+        ],
+        "fabric-datagen": [
+            "io.github.andrewcwhy.allthingsfoliage.platform.fabric.datagen.FabricDataGeneratorEntrypoint"
+        ],
+        "modmenu": [
+            "io.github.andrewcwhy.allthingsfoliage.platform.fabric.FabricModMenuIntegration"
+        ]
+    },
+    "mixins": [
+        "allthingsfoliage.gpu.mixins.json",
+        "allthingsfoliage.iris.mixins.json",
+        "allthingsfoliage.pass.mixins.json",
+        "allthingsfoliage.targeting.mixins.json"
+    ],
+    "depends": {
+        "fabric-api": ">=0.161.0+26.3",
+        "fabricloader": ">=0.20.1",
+        "java": ">=25",
+        "minecraft": "26.3",
+        "sway": "*"
+    },
+    "recommends": {
+        "modmenu": "*"
+    },
+    "breaks": {}
+}

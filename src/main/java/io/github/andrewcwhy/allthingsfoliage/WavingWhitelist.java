@@ -3,9 +3,10 @@ package io.github.andrewcwhy.allthingsfoliage;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-//?} else {
-/*import net.minecraft.resources.ResourceLocation;
- */ //?}
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+
+import net.minecraft.resources.Identifier;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -18,10 +19,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.core.registries.BuiltInRegistries;
-//? >=1.21.11 {
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.Block;
 
 /**
  * The blocks Sway does not bend that the GPU renderer still draws and waves: they sway in calm weather and move with
@@ -195,63 +192,12 @@ public final class WavingWhitelist {
 
     /** Whether the game draws leaves see-through now, as its Fancy leaves do. Read on the render thread. */
     public static boolean gameCutoutLeaves() {
-        //? >=1.21.11 {
+        
         return net.minecraft.client.Minecraft.getInstance()
             .options.cutoutLeaves()
             .get();
-        //?} else {
-        /*// Sodium and Embeddium have leaves of their own, Default, Fancy or Fast, which decide over the graphics setting.
-		Boolean sodium = sodiumFancyLeaves();
-		return sodium != null ? sodium : net.minecraft.client.Minecraft.useFancyGraphics();
-		*/ //?}
+        
     }
-
-    //? <1.21.11 {
-    /*/^* Where Sodium keeps its leaves quality: its options, their quality settings, the leaves' and how it is asked. ^/
-	private static boolean sodiumSought;
-	private static java.lang.reflect.Method sodiumOptions;
-	private static java.lang.reflect.Field sodiumQuality;
-	private static java.lang.reflect.Field sodiumLeaves;
-	private static java.lang.reflect.Method sodiumIsFancy;
-
-	/^*
-	 * Whether Sodium (or Embeddium, which keeps Sodium's names) draws leaves Fancy, its own setting read against the
-	 * graphics setting as Sodium reads it; null without either, or where it is not where it is looked for.
-	 ^/
-	private static Boolean sodiumFancyLeaves() {
-		if (!sodiumSought) {
-			sodiumSought = true;
-			for (String name : new String[] {"net.caffeinemc.mods.sodium.client.SodiumClientMod",
-					"me.jellysquid.mods.sodium.client.SodiumClientMod"}) {
-				try {
-					Class<?> mod = Class.forName(name, false, WavingWhitelist.class.getClassLoader());
-					java.lang.reflect.Method options = mod.getMethod("options");
-					java.lang.reflect.Field quality = options.getReturnType().getField("quality");
-					java.lang.reflect.Field leaves = quality.getType().getField("leavesQuality");
-					java.lang.reflect.Method isFancy = leaves.getType().getMethod("isFancy",
-							net.minecraft.client.GraphicsStatus.class);
-					sodiumOptions = options;
-					sodiumQuality = quality;
-					sodiumLeaves = leaves;
-					sodiumIsFancy = isFancy;
-					break;
-				} catch (ReflectiveOperationException | LinkageError e) {
-					// Not this one.
-				}
-			}
-		}
-		if (sodiumIsFancy == null) {
-			return null;
-		}
-		try {
-			Object leaves = sodiumLeaves.get(sodiumQuality.get(sodiumOptions.invoke(null)));
-			return (Boolean) sodiumIsFancy.invoke(leaves,
-					net.minecraft.client.Minecraft.getInstance().options.graphicsMode().get());
-		} catch (ReflectiveOperationException | RuntimeException e) {
-			return null;
-		}
-	}
-	*/ //?}
 
     /**
      * Follows the game's leaves, Fancy or Fast, and whether the renderer can draw them solid, once a frame; returns whether
@@ -349,11 +295,9 @@ public final class WavingWhitelist {
 
     private static void add(Group group, String... ids) {
         for (String id : ids) {
-            //? >=1.21.11 {
+            
             Identifier key = Identifier.tryParse(id);
-            //?} else {
-            /*ResourceLocation key = ResourceLocation.tryParse(id);
-             */ //?}
+            
             if (key != null) {
                 BuiltInRegistries.BLOCK.getOptional(key).ifPresent(block ->
                     BLOCKS.putIfAbsent(block, group)
@@ -364,11 +308,9 @@ public final class WavingWhitelist {
 
     private static void rest(String... ids) {
         for (String id : ids) {
-            //? >=1.21.11 {
+            
             Identifier key = Identifier.tryParse(id);
-            //?} else {
-            /*ResourceLocation key = ResourceLocation.tryParse(id);
-             */ //?}
+            
             if (key != null) {
                 BuiltInRegistries.BLOCK.getOptional(key).ifPresent(
                     RESTING::add
@@ -379,11 +321,9 @@ public final class WavingWhitelist {
 
     private static void follow(String... ids) {
         for (String id : ids) {
-            //? >=1.21.11 {
+            
             Identifier key = Identifier.tryParse(id);
-            //?} else {
-            /*ResourceLocation key = ResourceLocation.tryParse(id);
-             */ //?}
+            
             if (key != null) {
                 BuiltInRegistries.BLOCK.getOptional(key).ifPresent(
                     FOLLOWERS::add
@@ -424,11 +364,9 @@ public final class WavingWhitelist {
         int colon = tag.indexOf(':');
         String namespace = colon < 0 ? "minecraft" : tag.substring(0, colon);
         String path = colon < 0 ? tag : tag.substring(colon + 1);
-        //? >=1.21.1 {
+        
         String file = "data/" + namespace + "/tags/block/" + path + ".json";
-        //?} else {
-        /*String file = "data/" + namespace + "/tags/blocks/" + path + ".json";
-         */ //?}
+        
         try {
             for (byte[] source : AllThingsFoliage.xplat().readAll(file)) {
                 try (

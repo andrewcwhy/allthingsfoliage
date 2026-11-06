@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -35,16 +33,11 @@ public final class VulkanBridge {
     // through it as through the game's own. Before that it stands in for OpenGL call by call and has none of the calls
     // the renderer draws with, so the foliage is drawn through VulkanMod itself (see VulkanLegacyDraw), which is
     // written against 0.6.7 on 1.21.1; on 1.20.1 its chunk builds are left alone and the foliage stays in them.
-    //? >=1.21.11 {
+    
     private static final boolean DEVICE = true;
-    //?} else {
-    /*private static final boolean DEVICE = false;
-     */ //?}
-    //? >=1.21.1 {
+
     private static final boolean SUPPORTED = true;
-    //?} else {
-    /*private static final boolean SUPPORTED = false;
-     */ //?}
+    
     private static final Class<?> RENDER_REGION =
         LOADED && SUPPORTED ? find(VULKAN + "build.RenderRegion") : null;
     private static boolean warned;
@@ -206,4 +199,3 @@ public final class VulkanBridge {
         }
     }
 }
-//?}

@@ -219,6 +219,11 @@ public final class FoliageSettings {
         /** Whether the mod's default radius has been offered yet; see {@link #applyDefaultRadiusOnce}. */
         boolean defaultRadiusApplied;
         /**
+         * Whether only living entities can be targeted, so an entity that has died and only remains to play its death
+         * animation no longer absorbs hits.
+         */
+        boolean targetAliveOnly = true;
+        /**
          * Blocks that stop rain's wind although they are fences, fence gates or bars, by id: a mod's solid fence, say.
          * Only set by editing the file.
          */
@@ -243,12 +248,7 @@ public final class FoliageSettings {
      * GPU renderer is then the only way the mod does anything, and is kept on whatever the file says.
      */
     public static boolean cpuRendererAvailable() {
-        //? forge {
-        /*// Rubidium is Embeddium's earlier name, and still installed under it.
-		return !AllThingsFoliage.xplat().isModLoaded("embeddium") && !AllThingsFoliage.xplat().isModLoaded("rubidium");
-		*/ //?} else {
         return true;
-        //?}
     }
 
     public static void setGpuRenderer(boolean enabled) {
@@ -301,7 +301,6 @@ public final class FoliageSettings {
         values.wavingFoliage = enabled;
     }
 
-    /** How strongly the wind sways foliage, as a multiplier of the shader's own strength. */
     /** Whether the leaves of the waving whitelist wave too, with the GPU renderer. */
     public static boolean wavingLeaves() {
         return values.wavingLeaves;
@@ -311,6 +310,7 @@ public final class FoliageSettings {
         values.wavingLeaves = enabled;
     }
 
+    /** How strongly the wind sways foliage, as a multiplier of the shader's own strength. */
     public static float wavingIntensity() {
         return values.wavingIntensity;
     }
@@ -327,6 +327,18 @@ public final class FoliageSettings {
         return (
             Math.abs(values.wavingIntensity - DEFAULT_WAVING_INTENSITY) < 0.001F
         );
+    }
+
+    /**
+     * Whether only living entities can be targeted. Entities that have died and only remain to play their death
+     * animation are then looked through, so they no longer absorb hits.
+     */
+    public static boolean targetAliveOnly() {
+        return values.targetAliveOnly;
+    }
+
+    public static void setTargetAliveOnly(boolean enabled) {
+        values.targetAliveOnly = enabled;
     }
 
     /** The interaction radius on the slider's steps, from the minimum up to where Sway stops. */

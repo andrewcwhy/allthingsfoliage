@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.mixin;
 
-//? >=1.20.1 {
-
 import com.github.razorplay01.sway.client.behavior.force.ProximityForceBehavior;
 import com.github.razorplay01.sway.config.SwayConfig;
 import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageInteraction;
@@ -50,4 +48,3 @@ public abstract class SwayProximityForceMixin {
         return GpuFoliageInteraction.plantPushIntensity(config.intensity);
     }
 }
-//?}

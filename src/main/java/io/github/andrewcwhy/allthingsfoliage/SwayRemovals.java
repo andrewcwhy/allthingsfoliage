@@ -1,14 +1,11 @@
 package io.github.andrewcwhy.allthingsfoliage;
 
 import com.github.razorplay01.sway.api.SwayAPI;
-//?} else {
-/*import net.minecraft.resources.ResourceLocation;
- */ //?}
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
-import net.minecraft.core.registries.BuiltInRegistries;
-//? >=1.21.11 {
-import net.minecraft.resources.Identifier;
 
 /**
  * Blocks Sway registers that it should not, taken back out of its registry: they stay plain vanilla blocks, with no
@@ -62,11 +59,9 @@ public final class SwayRemovals {
 
     private static void remove(String... ids) {
         for (String id : ids) {
-            //? >=1.21.11 {
+            
             Identifier key = Identifier.tryParse(id);
-            //?} else {
-            /*ResourceLocation key = ResourceLocation.tryParse(id);
-             */ //?}
+            
             if (key == null) {
                 continue;
             }

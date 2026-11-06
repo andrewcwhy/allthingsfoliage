@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.mixin;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageRenderer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -43,4 +41,3 @@ public abstract class ClientLevelMixin {
         GpuFoliageRenderer.onBlockUpdated(pos, newState);
     }
 }
-//?}

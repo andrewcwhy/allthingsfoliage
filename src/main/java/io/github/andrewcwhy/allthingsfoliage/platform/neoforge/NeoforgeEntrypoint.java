@@ -1,20 +1,21 @@
 package io.github.andrewcwhy.allthingsfoliage.platform.neoforge;
-
 //? neoforge {
-
-/*import io.github.andrewcwhy.allthingsfoliage.FoliageConfigScreen;
+/*
+import io.github.andrewcwhy.allthingsfoliage.FoliageConfigScreen;
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageSplit;
-//? <= 1.21.1 {
-/^import io.github.andrewcwhy.allthingsfoliage.ModCompatRegistry;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.level.block.Block;
-^///?}
+// Update these imports to match wherever you placed the CutThrough files
+import io.github.andrewcwhy.allthingsfoliage.cutthrough.CutThrough;
+import io.github.andrewcwhy.allthingsfoliage.cutthrough.CutThroughClient;
+
+import fuzs.puzzleslib.common.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.common.api.client.core.v1.ClientModConstructor;
+
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import java.util.function.Supplier;
@@ -22,44 +23,38 @@ import java.util.function.Supplier;
 @Mod(AllThingsFoliage.MOD_ID)
 public class NeoforgeEntrypoint {
 
-	public NeoforgeEntrypoint(IEventBus modEventBus, ModContainer modContainer) {
-		AllThingsFoliage.onInitialize();
-		modEventBus.addListener(this::onClientSetup);
-		modContainer.registerExtensionPoint(
-				IConfigScreenFactory.class,
-				(Supplier<IConfigScreenFactory>) () -> (client, parent) -> new FoliageConfigScreen(parent)
-		);
-	}
+    public NeoforgeEntrypoint(IEventBus modEventBus, ModContainer modContainer) {
+        AllThingsFoliage.onInitialize();
 
-	private void onClientSetup(FMLClientSetupEvent event) {
-		event.enqueueWork(() -> {
-			AllThingsFoliage.onInitializeClient();
+        // --- Cut Through Initialization ---
+        // Bind PuzzlesLib logic to your own mod ID
+        ModConstructor.construct(AllThingsFoliage.MOD_ID, CutThrough::new);
 
-			// The constructor runs during mod construction, before any mod has registered its
-			// blocks, so third-party lookups have to wait. Client setup is the earliest point that
-			// is both past the registry events and guaranteed client-only: the compat registry
-			// touches Sway's client behaviour classes, which must not load on a dedicated server.
-			AllThingsFoliage.onRegistriesReady();
+        // Safely run the client constructor only on the physical client
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            ClientModConstructor.construct(AllThingsFoliage.MOD_ID, CutThroughClient::new);
+        }
+        // ----------------------------------
 
-			//? <= 1.21.1 {
-			/^// Sway wraps every registered block's BakedModel in its own SwayModel, which does not
-			// delegate NeoForge's getRenderTypes(). Wrapped models therefore fall back to the
-			// ItemBlockRenderTypes lookup, losing any "render_type" declared in the model JSON and
-			// rendering foliage in the solid layer (transparent texels turn black). Populating the
-			// lookup for the blocks we register makes that fallback resolve correctly.
-			//
-			// 1.21.11+ replaced BakedModel with BlockStateModel, where the render layer travels
-			// inside each BlockStateModelPart instead of a model-level method, so Sway's wrapper
-			// cannot drop it there and no workaround is needed.
-			// Only the plants Sway bends: a block it only pushes keeps its own layers -- Snow! Real Magic's snow draws
-			// its snow in the solid layer and the plant inside in the plant's own, and on cutout alone it draws nothing.
-			for (Block block : ModCompatRegistry.registeredBlocks()) {
-				if (GpuFoliageSplit.bends(block)) {
-					ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped());
-				}
-			}
-			^///?}
-		});
-	}
+        modEventBus.addListener(this::onClientSetup);
+        modContainer.registerExtensionPoint(
+                IConfigScreenFactory.class,
+                (Supplier<IConfigScreenFactory>) () -> (client, parent) -> new FoliageConfigScreen(parent)
+        );
+    }
+
+    private void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            AllThingsFoliage.onInitializeClient();
+
+            // The constructor runs during mod construction, before any mod has registered its
+            // blocks, so third-party lookups have to wait. Client setup is the earliest point that
+            // is both past the registry events and guaranteed client-only: the compat registry
+            // touches Sway's client behaviour classes, which must not load on a dedicated server.
+            AllThingsFoliage.onRegistriesReady();
+
+        });
+    }
 }
-*/ //?}
+*/
+//?}

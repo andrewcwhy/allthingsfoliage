@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources./*? >= 1.21.11 {*/ Identifier /*?} else {*/ /*ResourceLocation */ /*?} */;
+import net.minecraft.resources. Identifier ;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -430,12 +430,7 @@ public class ModCompatRegistry {
 
     private static Optional<Block> lookup(String id) {
         try {
-            /*? >= 1.21.11 {*/
-            Identifier /*?} else {*/ /*ResourceLocation */ /*?} */ identifier =
-                Identifier /*?} else {*/ /*ResourceLocation */ /*?} */
-                    /*? >= 1.21.11 {*/ ./*? >1.20.1 {*/ parse/*?} else { */ /*tryParse*/ /*?} */ (
-                        id
-                    );
+            Identifier identifier = Identifier.parse(id);
             Optional<Block> block = BuiltInRegistries.BLOCK.getOptional(
                 identifier
             ).filter(b -> b != Blocks.AIR);

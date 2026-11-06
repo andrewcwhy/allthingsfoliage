@@ -1,40 +1,29 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//?} else {
-/*import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.shaders.ShaderSource;
-import com.mojang.blaze3d.shaders.ShaderType;
-*/ //?}
-import com.mojang.blaze3d.systems.RenderSystem;
-//? >=1.21.11 {
-
-//? >=26.3 {
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderSource;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.util.Util;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-//? <26.2 {
-/*import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-*/ //?} else {
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+
 import java.io.IOException;
 import java.io.Reader;
-//?}
+import java.util.Optional;
+import net.minecraft.server.packs.resources.Resource;
+import org.apache.commons.io.IOUtils;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.util.Util;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Draws foliage with the shaders Sodium draws its chunks with -- Sodium's own, or the ones a resource pack puts in
@@ -69,17 +58,7 @@ final class SodiumFoliageShader {
         AllThingsFoliage.MOD_ID,
         "core/foliage_sodium"
     );
-    //? <26.3 {
-    /*/^*
-	 * The copy of Sodium's solid pass, which keeps every pixel: for leaves drawn as the game's Fast leaves are. A name of
-	 * its own, since the game keeps what it compiled by name and the two copies differ only in their own source.
-	 ^/
-	static final Identifier SHADER_OPAQUE = Identifier.fromNamespaceAndPath(AllThingsFoliage.MOD_ID, "core/foliage_sodium_opaque");
-	*/ //?}
-    //? <26.1.2 {
-    /*/^* Sodium's buffer of when each chunk started fading in; every one of the mod's is fully in. ^/
-	static final String CHUNK_DATA = "ChunkData";
-	*/ //?}
+
     static final String BLOCK_TEXTURE = "u_BlockTex";
     static final String LIGHT_TEXTURE = "u_LightTex";
 
@@ -91,36 +70,13 @@ final class SodiumFoliageShader {
     private static final String OPAQUE_FRAGMENT =
         "blocks/block_layer_opaque.fsh";
 
-    //? <26.2 {
-    /*private static final boolean CORE_SHADER_SUPPORT = AllThingsFoliage.xplat().isModLoaded("sodiumcoreshadersupport");
-	private static final MethodHandle SHADER_SOURCE = findShaderSource();
-
-	private static final Pattern IMPORT = Pattern.compile("^\\s*#import\\s*<([\\w.-]+):([\\w/.-]+)>\\s*$", Pattern.MULTILINE);
-	/^* The include that decodes Sodium's vertices, replaced by {@link #VERTEX_INPUTS}. ^/
-	private static final String CHUNK_VERTEX = "sodium:include/chunk_vertex.glsl";
-	/^* Sodium 0.9's block of globals, left out; see {@link #adapt}. Sodium 0.8 has none. ^/
-	private static final String GLOBALS = "sodium:include/globals.glsl";
-
-	/^*
-	 * What Sodium compiles its cutout chunk program with: fog, the alpha test, and the vertex layout it has (the mod's
-	 * include ignores that one). Sodium Core Shader Support adds its own, which packs may test for.
-	 ^/
-	private static final String[] DEFINES = CORE_SHADER_SUPPORT
-			? new String[] {"USE_FOG", "USE_FOG_SMOOTH", "USE_FRAGMENT_DISCARD", "RENDER_PASS_CUTOUT",
-					"USE_VERTEX_COMPRESSION", "SODIUM_CORE_SHADER_SUPPORT"}
-			: new String[] {"USE_FOG", "USE_FOG_SMOOTH", "USE_FRAGMENT_DISCARD", "RENDER_PASS_CUTOUT",
-					"USE_VERTEX_COMPRESSION"};
-	*/ //?} else {
     /** The game's own import, by namespace and path under that namespace's shader includes, or relative to the file. */
-    //? >=26.3 {
+    
     private static final Pattern IMPORT = Pattern.compile(
         "^\\s*#include\\s*(?:<([\\w.-]+):([\\w/.-]+)>|\"([\\w/.-]+)\")\\s*$",
         Pattern.MULTILINE
     );
-    //?} else {
-    /*private static final Pattern IMPORT = Pattern.compile(
-			"^\\s*#moj_import\\s*(?:<([\\w.-]+):([\\w/.-]+)>|\"([\\w/.-]+)\")\\s*$", Pattern.MULTILINE);
-	*/ //?}
+    
     /** The include that decodes Sodium's vertices, replaced by {@link #VERTEX_INPUTS}. */
     private static final String CHUNK_VERTEX =
         "sodium:shaders/include/chunk_vertex.glsl";
@@ -136,9 +92,7 @@ final class SodiumFoliageShader {
         "USE_FOG",
         "ALPHA_CUTOUT 0.5",
     };
-    //?}
 
-    //? >=26.1.2 {
     /** Sodium 0.9's per-section fade-in times, read from a buffer; every one of the mod's is fully in. */
     private static final Pattern SECTION_TIME = Pattern.compile(
         "\\btexelFetch\\s*\\(\\s*u_SectionTimeInfo\\b"
@@ -154,7 +108,6 @@ final class SodiumFoliageShader {
     private static final Pattern PUSH_CONSTANTS = Pattern.compile(
         "\\blayout\\s*\\(\\s*push_constant\\s*\\)\\s*uniform\\s+\\w+\\s*\\{[^}]*\\}\\s*\\w*\\s*;"
     );
-    //?}
 
     private static final Pattern VERSION = Pattern.compile(
         "^\\s*#version[^\\n]*\\n",
@@ -163,7 +116,7 @@ final class SodiumFoliageShader {
 
     // 26.3 reordered the members of DynamicTransforms and Globals. Read in another version's order, the region's offset
     // would come from the wrong bytes, and nothing would say so.
-    //? >=26.3 {
+    
     private static final String DYNAMIC_TRANSFORMS = """
     layout(std140) uniform DynamicTransforms {
         mat4 mc2_ModelViewMat;
@@ -183,27 +136,6 @@ final class SodiumFoliageShader {
         int mc2_UseRgss;
     };
     """;
-    //?} else {
-    /*private static final String DYNAMIC_TRANSFORMS = """
-			layout(std140) uniform DynamicTransforms {
-			    mat4 mc2_ModelViewMat;
-			    vec4 mc2_ColorModulator;
-			    vec3 mc2_ModelOffset;
-			    mat4 mc2_TextureMat;
-			};
-			""";
-	private static final String GLOBALS_BLOCK = """
-			layout(std140) uniform Globals {
-			    ivec3 mc2_CameraBlockPos;
-			    vec3 mc2_CameraOffset;
-			    vec2 mc2_ScreenSize;
-			    float mc2_GlintAlpha;
-			    float mc2_GameTime;
-			    int mc2_MenuBlurRadius;
-			    int mc2_UseRgss;
-			};
-			""";
-	*/ //?}
 
     /**
      * The game's uniform blocks the replacements below read, laid out as vanilla declares them. Their members are renamed:
@@ -273,7 +205,7 @@ final class SodiumFoliageShader {
 
     /** Where the mod's own inputs and sway.glsl go in {@link #VERTEX_INPUTS}. */
     private static final String ADDITIONS = "MC2_ADDITIONS";
-    //? >=26.3 {
+    
     /**
      * What goes there on 26.3: the mod's two per-vertex values, after the four it shares with vanilla, the blocks the sway
      * reads -- the same file the mod's own shader includes -- and the sway.
@@ -281,27 +213,18 @@ final class SodiumFoliageShader {
     private static final String ADDITIONS_SOURCE = """
     layout(location = 4) in float SwayCell;
     layout(location = 5) in float SwayWeights;
-    #include <mc2_interactivefoliage:foliage_uniforms.glsl>
-    #include <mc2_interactivefoliage:sway.glsl>
+    #include <allthingsfoliage:foliage_uniforms.glsl>
+    #include <allthingsfoliage:sway.glsl>
     """;
-    //?}
 
     /** The mod's vertices as the shader reads them; from 26.3 every input names its location. */
-    //? >=26.3 {
+    
     private static final String VERTEX_ATTRIBUTES = """
     layout(location = 0) in vec3 Position;
     layout(location = 1) in vec4 Color;
     layout(location = 2) in vec2 UV0;
     layout(location = 3) in ivec2 UV2;
     """;
-    //?} else {
-    /*private static final String VERTEX_ATTRIBUTES = """
-			in vec3 Position;
-			in vec4 Color;
-			in vec2 UV0;
-			in ivec2 UV2;
-			""";
-	*/ //?}
 
     /**
      * Fills in what Sodium's vertex include does, from the mod's vertices: the position swayed, relative to the region,
@@ -338,7 +261,6 @@ final class SodiumFoliageShader {
         }
         """;
 
-    //? >=26.3 {
     /**
      * Each copy as last compiled -- cut out, and solid for Fast leaves -- or null where it could not be; asked for again
      * once the shaders reload.
@@ -374,61 +296,8 @@ final class SodiumFoliageShader {
         public void close() {}
     }
 
-    //?} else {
-    /*private static final ShaderSource SOURCE = (id, type) -> {
-		boolean cutout = id.equals(SHADER);
-		if (!cutout && !id.equals(SHADER_OPAQUE)) {
-			return Minecraft.getInstance().getShaderManager().getShader(id, type);
-		}
-		String built = type == ShaderType.VERTEX
-				? PolytoneColoredLight.tintSodiumVertex(vertex(cutout),
-						Minecraft.getInstance().getShaderManager().getShader(TerrainFoliageShader.TERRAIN, ShaderType.VERTEX),
-						GLOBALS_BLOCK)
-				: fragment(cutout);
-		if (built == null) {
-			AllThingsFoliage.LOGGER.warn("Sodium's chunk shaders in use can't be read by the GPU foliage renderer; foliage near "
-					+ "the player is drawn with the terrain's shaders, which may not match a resource pack's look");
-		}
-		return built;
-	};
-	*/ //?}
-
     private SodiumFoliageShader() {}
 
-    //? <26.2 {
-    /*private static MethodHandle findShaderSource() {
-		if (!SODIUM) {
-			return null;
-		}
-		try {
-			return MethodHandles.publicLookup().findStatic(
-					Class.forName("net.caffeinemc.mods.sodium.client.gl.shader.ShaderLoader"), "getShaderSource",
-					MethodType.methodType(String.class, Identifier.class));
-		} catch (ReflectiveOperationException | LinkageError e) {
-			AllThingsFoliage.LOGGER.warn("Sodium's shaders could not be reached; foliage near the player is drawn with the "
-					+ "terrain's shaders, which may not match a resource pack's look", e);
-			return null;
-		}
-	}
-
-	/^* Whether Sodium draws the chunks, and its shaders can be asked for. ^/
-	static boolean available() {
-		return SHADER_SOURCE != null;
-	}
-
-	/^* A shader file as Sodium reads it, by its name under Sodium's shaders, or null. ^/
-	private static String read(String namespace, String path) {
-		try {
-			return (String) SHADER_SOURCE.invokeExact(Identifier.fromNamespaceAndPath(namespace, path));
-		} catch (Throwable e) {
-			return null;
-		}
-	}
-
-	private static String imported(Matcher match, String from) {
-		return match.group(1) + ":" + match.group(2);
-	}
-	*/ //?} else {
     /** Whether Sodium draws the chunks. */
     static boolean available() {
         return SODIUM;
@@ -458,9 +327,6 @@ final class SodiumFoliageShader {
         return from.substring(0, directory + 1) + match.group(3);
     }
 
-    //?}
-
-    //? >=26.3 {
     /**
      * The pipeline compiled with the copy of Sodium's shaders, or null where Sodium does not draw the chunks or the copy
      * could not be built or compiled.
@@ -527,13 +393,6 @@ final class SodiumFoliageShader {
         return compiled;
     }
 
-    //?} else {
-    /*/^* As {@link TerrainFoliageShader#usable}: compiled once after each resource reload, and the answer kept. ^/
-	static boolean usable(RenderPipeline pipeline) {
-		return available() && RenderSystem.getDevice().precompilePipeline(pipeline, SOURCE).isValid();
-	}
-	*/ //?}
-
     private static String read(String name) {
         int colon = name.indexOf(':');
         return read(name.substring(0, colon), name.substring(colon + 1));
@@ -541,11 +400,9 @@ final class SodiumFoliageShader {
 
     /** A shader's full name, as the imports inside it are resolved against. */
     private static String shaderName(String path) {
-        //? <26.2 {
-        /*return "sodium:" + path;
-         */ //?} else {
+        
         return "sodium:shaders/" + path;
-        //?}
+        
     }
 
     /** Sodium's solid material, which the copy for solid leaves hands its shaders in place of the cutout one. */
@@ -555,11 +412,9 @@ final class SodiumFoliageShader {
     private static String vertex(boolean cutout) {
         String name = shaderName(OPAQUE_VERTEX);
         String raw = read(name);
-        //? >=26.3 {
+        
         String additions = ADDITIONS_SOURCE;
-        //?} else {
-        /*String additions = Minecraft.getInstance().getShaderManager().getShader(TerrainFoliageShader.VERTEX, ShaderType.VERTEX);
-         */ //?}
+        
         if (raw == null || additions == null || !raw.contains("_vert_init")) {
             return null;
         }
@@ -605,15 +460,13 @@ final class SodiumFoliageShader {
             String replacement = "";
             if (included.add(name) && !name.equals(GLOBALS)) {
                 if (name.equals(CHUNK_VERTEX) && vertexInputs != null) {
-                    //? >=26.3 {
+                    
                     // Written out as well: on 26.3 the copy is handed to the compiler whole, with nothing left to include.
                     replacement = expand(vertexInputs, name, null, included);
                     if (replacement == null) {
                         return null;
                     }
-                    //?} else {
-                    /*replacement = vertexInputs;
-                     */ //?}
+                    
                 } else {
                     String imported = read(name);
                     replacement =
@@ -686,13 +539,12 @@ final class SodiumFoliageShader {
                     .append('\n');
             }
         }
-        //? >=26.1.2 {
+        
         body = withoutSodiumDrawState(body);
-        //?}
+        
         return body == null ? null : header.append(body).toString();
     }
 
-    //? >=26.1.2 {
     /**
      * Every read of a section's fade-in time answers -1, never faded: the reads replaced whole, arguments and all, and
      * the buffer they read from no longer declared, so nothing needs binding to it. The same goes for Sodium 0.8's block
@@ -733,6 +585,5 @@ final class SodiumFoliageShader {
         }
         return out.append(body.substring(copied)).toString();
     }
-    //?}
+    
 }
-//?}

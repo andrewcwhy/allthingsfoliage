@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -24,19 +22,13 @@ import java.util.Collection;
 // Public for the mixin that reports Sodium's uploads.
 public final class SodiumBridge {
 
-    //? >=1.21.1 {
     private static final String SODIUM = "net.caffeinemc.mods.sodium.client.";
-    //?} else {
-    /*private static final String SODIUM = "me.jellysquid.mods.sodium.client.";
-     */ //?}
+    
     private static final String RENDERER =
         SODIUM + "render.SodiumWorldRenderer";
     /** On Forge it is Embeddium, which keeps Sodium 0.5's classes under a mod id of its own. */
-    //? forge {
-    /*private static final String MOD_ID = "embeddium";
-     */ //?} else {
+    
     private static final String MOD_ID = "sodium";
-    //?}
 
     private static final MethodHandle INSTANCE;
     private static final MethodHandle IS_BOX_VISIBLE;
@@ -124,32 +116,9 @@ public final class SodiumBridge {
 
     private SodiumBridge() {}
 
-    //? fabric && <1.21.1 {
-    /*private static boolean warnedWithoutIndium;
-
-	/^*
-	 * Whether the chunk mesher can be told to leave foliage out. Sodium 0.5 meshes a block without Fabric's rendering
-	 * API unless Indium is installed to provide it, and that API is the one call a foliage model can withhold its
-	 * geometry through. Without it the chunk mesh keeps all of the foliage, and the GPU renderer drawing it as well
-	 * would show every plant twice -- so it stays out of the way, as if switched off.
-	 ^/
-	static boolean canSplitChunkMeshes() {
-		if (!AllThingsFoliage.xplat().isModLoaded("sodium") || AllThingsFoliage.xplat().isModLoaded("indium")) {
-			return true;
-		}
-		if (!warnedWithoutIndium) {
-			warnedWithoutIndium = true;
-			AllThingsFoliage.LOGGER.warn("Sodium is installed without Indium, so the chunk mesh cannot leave foliage to the "
-					+ "GPU renderer; foliage is drawn by the chunk mesh alone. Install Indium to use the GPU renderer.");
-		}
-		return false;
-	}
-	*/ //?} else {
     static boolean canSplitChunkMeshes() {
         return true;
     }
-
-    //?}
 
     /** Whether Sodium draws the chunks, and so decides what the terrain around the foliage is drawn with. */
     /**
@@ -332,12 +301,7 @@ public final class SodiumBridge {
                 if (!MeshSwaps.BUILD_OUTPUT.isInstance(output)) {
                     continue;
                 }
-                //? forge {
-                /*// Embeddium sends a translucency sort through the same upload, as an output with no geometry in it.
-				if (MeshSwaps.INDEX_ONLY != null && (boolean) MeshSwaps.INDEX_ONLY.invokeExact(output)) {
-					continue;
-				}
-				*/ //?}
+                
                 Object section = (Object) MeshSwaps.SECTION.invokeExact(output);
                 GpuFoliageSplit.onChunkMeshSwapped(
                     (int) MeshSwaps.CHUNK_X.invokeExact(section),
@@ -359,38 +323,19 @@ public final class SodiumBridge {
         /**
          * The class declaring a build output's section: a common base from Sodium 0.6, the meshing output itself before.
          */
-        //? >=1.21.1 {
+        
         private static final String SECTION_OWNER =
             SODIUM + "render.chunk.compile.BuilderTaskOutput";
-        //?} else {
-        /*private static final String SECTION_OWNER = SODIUM + "render.chunk.compile.ChunkBuildOutput";
-         */ //?}
+        
         /** The field holding a build output's section: {@code render} through Sodium 0.8, {@code section} from 0.9. */
-        //? >=26.1.2 {
+        
         private static final String SECTION_FIELD = "section";
-        //?} else {
-        /*private static final String SECTION_FIELD = "render";
-         */ //?}
 
         static final Class<?> BUILD_OUTPUT;
         static final MethodHandle SECTION;
         static final MethodHandle CHUNK_X;
         static final MethodHandle CHUNK_Y;
         static final MethodHandle CHUNK_Z;
-
-        //? forge {
-        /*static final MethodHandle INDEX_ONLY = indexOnly();
-
-		private static MethodHandle indexOnly() {
-			try {
-				return MethodHandles.publicLookup().findVirtual(Class.forName(SODIUM + "render.chunk.compile.ChunkBuildOutput"),
-						"isIndexOnlyUpload", MethodType.methodType(boolean.class))
-						.asType(MethodType.methodType(boolean.class, Object.class));
-			} catch (ReflectiveOperationException e) {
-				return null;
-			}
-		}
-		*/ //?}
 
         static {
             Class<?> buildOutput = null;
@@ -465,4 +410,3 @@ public final class SodiumBridge {
         }
     }
 }
-//?}

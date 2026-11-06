@@ -1,86 +1,65 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//?} else {
-/*import com.mojang.blaze3d.opengl.GlProgram;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-*/ //?}
-//?} else {
-/*import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.renderer.ShaderInstance;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL31;
-*/ //?}
-import com.mojang.blaze3d.vertex.BufferBuilder;
-//? iris {
-
-//? >=26.2 {
-//? >=26.3 {
 import com.mojang.renderpearl.api.GpuFormat;
-//? >=26.3 {
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+
+import com.mojang.renderpearl.backend.opengl.GlProgram;
+import com.mojang.renderpearl.backend.opengl.GlStateManager;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-//? >=26.3 {
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+
 import com.mojang.renderpearl.api.vertex.VertexFormat;
 import com.mojang.renderpearl.api.vertex.VertexFormatElement;
-import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
-import com.mojang.renderpearl.backend.opengl.GlBuffer;
-//?} else {
-/*import com.mojang.blaze3d.GpuFormat;
- */ //?}
-//?}
-//? >=1.21.11 {
-//? >=26.3 {
-import com.mojang.renderpearl.backend.opengl.GlProgram;
-import com.mojang.renderpearl.backend.opengl.GlRenderPipeline;
-import com.mojang.renderpearl.backend.opengl.GlStateManager;
-import com.mojang.renderpearl.backend.opengl.VertexArray;
-import com.mojang.renderpearl.frontend.FrontendRenderPipeline;
-import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-//?}
-import io.github.andrewcwhy.allthingsfoliage.mixin.iris.IrisRenderingPipelineAccessor;
-//?} else {
-/*import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
-*/ //?}
+
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
-import net.irisshaders.iris.api.v0.IrisProgram;
-import net.irisshaders.iris.api.v0.IrisShadowProgram;
-import net.irisshaders.iris.gl.IrisRenderSystem;
-import net.irisshaders.iris.mixinterface.GlRenderPipelineAccess;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
-//? >=1.21.11 {
+
 import net.irisshaders.iris.pipeline.programs.ShaderSupplier;
-//?}
-//? >=26.2 {
+
 import net.irisshaders.iris.pipeline.transform.Patch;
-//?}
+
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.vertices.BlockSensitiveBufferBuilder;
 import net.irisshaders.iris.vertices.IrisVertexFormats;
-import net.minecraft.world.level.block.state.BlockState;
+import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
+import com.mojang.renderpearl.backend.opengl.GlBuffer;
+import com.mojang.renderpearl.backend.opengl.GlRenderPipeline;
+import com.mojang.renderpearl.backend.opengl.VertexArray;
+import com.mojang.renderpearl.frontend.FrontendRenderPipeline;
+import net.irisshaders.iris.api.v0.IrisProgram;
+import net.irisshaders.iris.api.v0.IrisShadowProgram;
+import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.mixinterface.GlRenderPipelineAccess;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33C;
+
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+import io.github.andrewcwhy.allthingsfoliage.mixin.iris.IrisRenderingPipelineAccessor;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Draws the GPU renderer's foliage through a loaded shader pack, so plants sway and get pushed exactly as without one
@@ -120,28 +99,21 @@ public final class IrisFoliageShaders {
 
     /** Whether the renderer has handed over what drawing through a pack takes; nothing is built before. */
     private static boolean configured;
-    //? >=1.21.11 {
+    
     private static RenderPipeline pipeline;
     private static RenderPipeline shadowPipeline;
     /** Bind group layouts from 26.2, uniform descriptions before: whatever the version declares a program's uniforms with. */
     private static List<?> layouts = List.of();
-    //?}
 
     private static IrisRenderingPipeline owner;
-    //? >=1.21.11 {
+    
     private static GlProgram main;
     private static GlProgram shadow;
-    //?} else {
-    /*private static ShaderInstance main;
-	private static ShaderInstance shadow;
-	/^* The mod's copies of the pack's solid terrain and solid shadow programs, for leaves drawn solid; see buildSolid. ^/
-	private static ShaderInstance mainSolid;
-	private static ShaderInstance shadowSolid;
-	*/ //?}
+    
     /** Bumped for every pack loaded, so sections meshed for the last one are meshed again with this one's block ids. */
     private static int generation;
     private static IrisCompat.ShadowDraw foliageShadowDraw;
-    //? >=26.1.2 {
+    
     private static boolean shadowCallbackRegistered;
     /**
      * Set when the Iris installed lacks what the renderer hands its foliage over to it by -- Iris 1.11.2 on 26.2 has no
@@ -149,8 +121,7 @@ public final class IrisFoliageShaders {
      * programs could not be built.
      */
     private static boolean irisTooOld;
-    //?}
-    //? >=1.21.11 {
+
     /**
      * The renderer's pipeline for leaves drawn solid, as the game's Fast leaves are, and the mod's copies of the pack's
      * solid terrain program and solid shadow program, which keep every pixel; null where the pack has none or they could
@@ -159,12 +130,7 @@ public final class IrisFoliageShaders {
     private static RenderPipeline opaquePipeline;
     private static GlProgram mainSolid;
     private static GlProgram shadowSolid;
-    //?}
-    //? >=1.21.11 && <26.3 {
-    /*/^* The same pipeline for the pack's shadow pass, which is one of its own before 26.3, as the cutout one is. ^/
-	private static RenderPipeline shadowOpaquePipeline;
-	*/ //?}
-    //? >=26.3 {
+
     /** Whether Iris has been told to draw the renderer's pipeline with the pack's program; see setUp. */
     private static boolean assigned;
     /**
@@ -185,12 +151,10 @@ public final class IrisFoliageShaders {
     private static int swayBinding = -1;
     private static int interactionBinding = -1;
 
-    //?}
-
     private IrisFoliageShaders() {}
 
     private static VertexFormat format() {
-        //? >=26.2 {
+        
         VertexFormat.Builder builder = VertexFormat.builder(0);
         for (VertexFormatElement element : IrisVertexFormats.TERRAIN.getElements()) {
             builder.addAttribute(element.name(), element.format());
@@ -199,16 +163,14 @@ public final class IrisFoliageShaders {
             .addAttribute("SwayCell", GpuFormat.R32_FLOAT)
             .addAttribute("SwayWeights", GpuFormat.R32_FLOAT)
             .build();
-        //?} else {
-        /*return GpuFoliageRenderer.withSwayValues(IrisVertexFormats.TERRAIN);
-         */ //?}
+        
     }
 
     /**
      * The renderer's pipelines for drawing through a shader pack -- in the pack's own pass and into its shadow map -- and
      * the uniform blocks they bind beyond Iris's own: the sway settings and the plant pushes.
      */
-    //? >=1.21.11 {
+    
     static void setUp(
         RenderPipeline foliagePipeline,
         RenderPipeline foliageShadowPipeline,
@@ -218,13 +180,10 @@ public final class IrisFoliageShaders {
         pipeline = foliagePipeline;
         shadowPipeline = foliageShadowPipeline;
         layouts = List.copyOf(foliageLayouts);
-        //?} else {
-        /*// Before 1.21.11 there are no pipelines: the renderer draws with the programs themselves, see program.
-	static void setUp(IrisCompat.ShadowDraw shadowDraw) {
-	*/ //?}
+        
         configured = true;
         foliageShadowDraw = shadowDraw;
-        //? >=26.3 {
+        
         // On 26.3 Iris swaps the program of any pipeline it has been told about for the pack's own, as it does for the
         // terrain's, and builds the pipeline that draws it; the renderer then puts its own program in the pack's place in
         // that pipeline (see withFoliageProgram). Iris keeps the shadow pass's programs apart, so the same pipeline is
@@ -241,8 +200,7 @@ public final class IrisFoliageShaders {
                 IrisShadowProgram.SHADOW_TERRAIN_CUTOUT
             );
         }
-        //?}
-        //? >=26.1.2 {
+
         if (!shadowCallbackRegistered) {
             shadowCallbackRegistered = true;
             try {
@@ -275,10 +233,9 @@ public final class IrisFoliageShaders {
                 );
             }
         }
-        //?}
+        
     }
 
-    //? >=26.3 {
     /**
      * The renderer's pipeline for leaves drawn solid: Iris is told to draw it with the pack's solid terrain program, in
      * whose place the mod's solid copy then goes, as for the cutout one. In the shadow pass Iris's state is the cutout
@@ -297,17 +254,6 @@ public final class IrisFoliageShaders {
             );
         }
     }
-
-    //?} elif >=1.21.11 {
-    /*/^*
-	 * The renderer's pipelines for leaves drawn solid, in the pack's own pass and in its shadow pass: drawn with the mod's
-	 * solid copies, as the cutout ones are with the cutout copies; see programFor.
-	 ^/
-	static void setUpOpaque(RenderPipeline foliageOpaquePipeline, RenderPipeline foliageShadowOpaquePipeline) {
-		opaquePipeline = foliageOpaquePipeline;
-		shadowOpaquePipeline = foliageShadowOpaquePipeline;
-	}
-	*/ //?}
 
     /** Whether the loaded pack's solid programs are built, so leaves can be drawn solid through it. */
     static boolean hasOpaquePrograms() {
@@ -363,11 +309,11 @@ public final class IrisFoliageShaders {
      * is ever used, and building here rather than as it loads never depends on which comes first.
      */
     static boolean ready() {
-        //? >=26.1.2 {
+        
         if (irisTooOld) {
             return false;
         }
-        //?}
+        
         if (
             !configured ||
             !(Iris.getPipelineManager().getPipelineNullable() instanceof
@@ -393,7 +339,6 @@ public final class IrisFoliageShaders {
         return generation;
     }
 
-    //? >=1.21.11 {
     /** The program one of the renderer's pipelines draws with, or null for any other pipeline, left to Iris. */
     public static GlProgram programFor(RenderPipeline requested) {
         if (
@@ -408,46 +353,9 @@ public final class IrisFoliageShaders {
         if (requested == opaquePipeline) {
             return mainSolid;
         }
-        //? <26.3 {
-        /*if (requested == shadowOpaquePipeline) {
-			return shadowSolid;
-		}
-		*/ //?}
+        
         return requested == shadowPipeline ? shadow : null;
     }
-
-    //?} else {
-    /*/^* The program the renderer draws foliage with in the pack's own pass, or in its shadow pass; solid leaves' if asked. ^/
-	static ShaderInstance program(boolean shadowPass, boolean solid) {
-		if (solid) {
-			return shadowPass ? shadowSolid : mainSolid;
-		}
-		return shadowPass ? shadow : main;
-	}
-
-	/^*
-	 * Sets what the mod's part of a program reads, once the program is applied: none of it is among the uniforms a shader
-	 * instance knows, which Iris lists itself, so each is set on the program directly.
-	 ^/
-	static void setSwayUniforms(ShaderInstance program, float intensity, float calmSway, float edgeMinX, float edgeMinZ,
-			float edgeMaxX,
-			float edgeMaxZ, int cameraX, int cameraY, int cameraZ, float offsetX, float offsetY, float offsetZ,
-			float gameTime, org.joml.Vector4f weather, org.joml.Vector3f subLevelDown, float subLevelWindX,
-			float subLevelWindZ, org.joml.Vector3f subLevelHang) {
-		int id = program.getId();
-		// What a sub-level's foliage goes by, all zero for the world's; see sublevel.glsl.
-		GL20.glUniform3f(GL20.glGetUniformLocation(id, "mc2_SubLevelDown"), subLevelDown.x, subLevelDown.y, subLevelDown.z);
-		GL20.glUniform2f(GL20.glGetUniformLocation(id, "mc2_SubLevelWind"), subLevelWindX, subLevelWindZ);
-		GL20.glUniform3f(GL20.glGetUniformLocation(id, "mc2_SubLevelHang"), subLevelHang.x, subLevelHang.y, subLevelHang.z);
-		GL20.glUniform1f(GL20.glGetUniformLocation(id, "mc2_SwayIntensity"), intensity);
-		GL20.glUniform1f(GL20.glGetUniformLocation(id, "mc2_CalmSway"), calmSway);
-		GL20.glUniform4f(GL20.glGetUniformLocation(id, "mc2_SwayEdge"), edgeMinX, edgeMinZ, edgeMaxX, edgeMaxZ);
-		GL20.glUniform3i(GL20.glGetUniformLocation(id, "mc2_CameraBlockPos"), cameraX, cameraY, cameraZ);
-		GL20.glUniform3f(GL20.glGetUniformLocation(id, "mc2_CameraOffset"), offsetX, offsetY, offsetZ);
-		GL20.glUniform1f(GL20.glGetUniformLocation(id, "mc2_GameTime"), gameTime);
-		GL20.glUniform4f(GL20.glGetUniformLocation(id, "mc2_Weather"), weather.x, weather.y, weather.z, weather.w);
-	}
-	*/ //?}
 
     static boolean hasShadowProgram() {
         return shadow != null;
@@ -470,7 +378,7 @@ public final class IrisFoliageShaders {
             ids != null &&
             (Object) builder instanceof BlockSensitiveBufferBuilder blocks
         ) {
-            //? >=1.21.1 {
+            
             blocks.beginBlock(
                 ids.getOrDefault(state, -1),
                 (byte) 0,
@@ -479,10 +387,7 @@ public final class IrisFoliageShaders {
                 y,
                 z
             );
-            //?} else {
-            /*// Before 1.21.1 ids are shorts and no light emission is written; Iris passes -1 for the render type of a block.
-			blocks.beginBlock((short) ids.getOrDefault(state, -1), (short) -1, x, y, z);
-			*/ //?}
+            
         }
     }
 
@@ -545,7 +450,7 @@ public final class IrisFoliageShaders {
                 );
                 return;
             }
-            //? >=1.21.11 {
+            
             main = finish(
                 access.mc2$createShader(
                     "mc2_foliage",
@@ -560,26 +465,18 @@ public final class IrisFoliageShaders {
                     false,
                     false,
                     false,
-                    //? >=26.2 {
+                    
                     Patch.VANILLA
-                    //?}
+                    
                 )
             );
-            //?} elif >=1.21.1 {
-            /*main = finish(access.mc2$createShader("mc2_foliage", terrain.get(), ProgramId.TerrainCutout,
-					ShaderKey.TERRAIN_CUTOUT.getAlphaTest(), FORMAT, ShaderKey.TERRAIN_CUTOUT.getFogMode(),
-					false, false, false, false, false));
-			*/ //?} else {
-            /*main = finish(access.mc2$createShader("mc2_foliage", terrain.get(), ProgramId.TerrainCutout,
-					ShaderKey.TERRAIN_CUTOUT.getAlphaTest(), FORMAT, ShaderKey.TERRAIN_CUTOUT.getFogMode(),
-					false, false, false, false));
-			*/ //?}
+            
             if (access.mc2$shadowRenderTargets() != null) {
                 Optional<ProgramSource> shadowSource = access
                     .mc2$resolver()
                     .resolve(ProgramId.ShadowCutout);
                 if (shadowSource.isPresent()) {
-                    //? >=1.21.11 {
+                    
                     shadow = finish(
                         access.mc2$createShadowShader(
                             "mc2_foliage_shadow",
@@ -592,20 +489,12 @@ public final class IrisFoliageShaders {
                             false,
                             false,
                             false,
-                            //? >=26.2 {
+                            
                             Patch.VANILLA
-                            //?}
+                            
                         )
                     );
-                    //?} elif >=1.21.1 {
-                    /*shadow = finish(access.mc2$createShadowShader("mc2_foliage_shadow", shadowSource.get(),
-							ProgramId.ShadowCutout, ShaderKey.SHADOW_TERRAIN_CUTOUT.getAlphaTest(), FORMAT,
-							false, false, false, false));
-					*/ //?} else {
-                    /*shadow = finish(access.mc2$createShadowShader("mc2_foliage_shadow", shadowSource.get(),
-							ProgramId.ShadowCutout, ShaderKey.SHADOW_TERRAIN_CUTOUT.getAlphaTest(), FORMAT,
-							false, false, false));
-					*/ //?}
+                    
                 }
             }
             buildSolid(access);
@@ -621,7 +510,6 @@ public final class IrisFoliageShaders {
         }
     }
 
-    //? >=1.21.11 {
     /**
      * Builds the mod's copies of the pack's solid terrain and solid shadow programs, as Iris builds the pack's own for
      * its solid terrain: the same sources with the alpha test off. A failure here leaves the cutout programs as they
@@ -649,9 +537,9 @@ public final class IrisFoliageShaders {
                     false,
                     false,
                     false,
-                    //? >=26.2 {
+                    
                     Patch.VANILLA
-                    //?}
+                    
                 )
             );
             GlProgram solidShadow = null;
@@ -677,9 +565,9 @@ public final class IrisFoliageShaders {
                         false,
                         false,
                         false,
-                        //? >=26.2 {
+                        
                         Patch.VANILLA
-                        //?}
+                        
                     )
                 );
             }
@@ -706,9 +594,6 @@ public final class IrisFoliageShaders {
         }
     }
 
-    //?}
-
-    //? >=1.21.11 {
     /** Links the program Iris compiled, or fails the same way Iris would for one of the pack's own. */
     private static GlProgram finish(ShaderSupplier supplier) {
         int program = supplier.id().program();
@@ -719,7 +604,7 @@ public final class IrisFoliageShaders {
                     GlStateManager.glGetProgramInfoLog(program, 32768)
             );
         }
-        //? >=26.3 {
+        
         // An Iris program binds only the blocks Iris knows by name, so the sway's are tied to points of the mod's own and
         // bound there by the renderer as it draws; see bindSwayBlocks.
         if (swayBinding < 0) {
@@ -729,11 +614,10 @@ public final class IrisFoliageShaders {
         }
         bindBlock(program, "iris_FoliageSway", swayBinding);
         bindBlock(program, "iris_FoliageInteraction", interactionBinding);
-        //?}
+        
         return supplier.shader().get();
     }
 
-    //? >=26.3 {
     private static void bindBlock(int program, String name, int binding) {
         int index = GL31.glGetUniformBlockIndex(program, name);
         if (index != GL31.GL_INVALID_INDEX) {
@@ -871,16 +755,14 @@ public final class IrisFoliageShaders {
         );
     }
 
-    //?}
-
     private static void closePrograms() {
-        //? >=26.3 {
+        
         // The pipelines built around the program are let go of without closing them, which would delete the program once
         // for each; their vertex arrays are closed here, and the program below.
         WITH_FOLIAGE_PROGRAM.clear();
         VERTEX_ARRAYS.forEach(VertexArray::close);
         VERTEX_ARRAYS.clear();
-        //?}
+        
         closeSolidPrograms();
         if (main != null) {
             main.close();
@@ -892,82 +774,11 @@ public final class IrisFoliageShaders {
         }
     }
 
-    //?} else {
-    /*/^*
-	 * Checks the program Iris linked, which only logs a failure before 1.21.11, and ties the plant pushes' uniform block
-	 * to the binding the renderer uploads them to, as the mod's own shader's is.
-	 ^/
-	private static ShaderInstance finish(ShaderInstance program) {
-		int id = program.getId();
-		if (GlStateManager.glGetProgrami(id, 35714) == 0) {
-			throw new IllegalStateException("Linking failed: " + GlStateManager.glGetProgramInfoLog(id, 32768));
-		}
-		int index = GL31.glGetUniformBlockIndex(id, "FoliageInteraction");
-		if (index != GL31.GL_INVALID_INDEX) {
-			GL31.glUniformBlockBinding(id, index, GpuFoliageRenderer.INTERACTION_BINDING);
-		}
-		return program;
-	}
-
-	// Iris keeps every program it builds and closes them with the pack, so the mod only lets go of its copies.
-	private static void closePrograms() {
-		main = null;
-		shadow = null;
-		mainSolid = null;
-		shadowSolid = null;
-	}
-
-	/^*
-	 * Builds the mod's copies of the pack's solid terrain and solid shadow programs, as Iris builds the pack's own for
-	 * its solid terrain: the same sources with the alpha test off. A failure here leaves the cutout programs as they
-	 * are and only the solid ones out, so Fast leaves stay with the chunk mesh under this pack.
-	 ^/
-	private static void buildSolid(IrisRenderingPipelineAccessor access) {
-		try {
-			Optional<ProgramSource> terrain = access.mc2$resolver().resolve(ProgramId.TerrainSolid);
-			if (terrain.isEmpty()) {
-				return;
-			}
-			//? >=1.21.1 {
-			ShaderInstance solid = finish(access.mc2$createShader("mc2_foliage_solid", terrain.get(),
-					ProgramId.TerrainSolid, ShaderKey.TERRAIN_SOLID.getAlphaTest(), FORMAT,
-					ShaderKey.TERRAIN_SOLID.getFogMode(), false, false, false, false, false));
-			//?} else {
-			/^ShaderInstance solid = finish(access.mc2$createShader("mc2_foliage_solid", terrain.get(),
-					ProgramId.TerrainSolid, ShaderKey.TERRAIN_SOLID.getAlphaTest(), FORMAT,
-					ShaderKey.TERRAIN_SOLID.getFogMode(), false, false, false, false));
-			^///?}
-			ShaderInstance solidShadow = null;
-			if (shadow != null) {
-				Optional<ProgramSource> shadowSource = access.mc2$resolver().resolve(ProgramId.ShadowSolid);
-				if (shadowSource.isEmpty()) {
-					return;
-				}
-				//? >=1.21.1 {
-				solidShadow = finish(access.mc2$createShadowShader("mc2_foliage_shadow_solid", shadowSource.get(),
-						ProgramId.ShadowSolid, ShaderKey.TERRAIN_SOLID.getAlphaTest(), FORMAT,
-						false, false, false, false));
-				//?} else {
-				/^solidShadow = finish(access.mc2$createShadowShader("mc2_foliage_shadow_solid", shadowSource.get(),
-						ProgramId.ShadowSolid, ShaderKey.TERRAIN_SOLID.getAlphaTest(), FORMAT,
-						false, false, false));
-				^///?}
-			}
-			mainSolid = solid;
-			shadowSolid = solidShadow;
-		} catch (Throwable e) {
-			AllThingsFoliage.LOGGER.warn("Could not build the solid foliage programs for this shader pack; Fast leaves near "
-					+ "the player are left to the chunk mesh while it is loaded", e);
-		}
-	}
-	*/ //?}
-
     /** Whether a program of the mod's is being built on this thread. */
     public static boolean isBuilding() {
         return BUILDING.get();
     }
 
-    //? >=1.21.11 {
     /** The uniform blocks the mod's programs bind on top of Iris's. */
     @SuppressWarnings("unchecked")
     public static <T> List<T> withFoliageLayouts(List<T> irisLayouts) {
@@ -975,8 +786,6 @@ public final class IrisFoliageShaders {
         all.addAll((List<T>) layouts);
         return all;
     }
-
-    //?}
 
     /**
      * The pack's vertex shader, as Iris translated it, reading a moved position in place of its own: the position
@@ -1016,7 +825,7 @@ public final class IrisFoliageShaders {
      * What is appended to the pack's vertex shader. The blocks are named with Iris's prefix, which it adds when it
      * looks a program's uniform blocks up, and they hold what the mod's own vertex shader reads under the same names.
      */
-    //? >=1.21.11 {
+    
     private static final String SWAY_SHADER =
         """
         // Added by MC2 - Interactive Foliage: the foliage it draws sways as it does without a shader pack.
@@ -1048,41 +857,6 @@ public final class IrisFoliageShaders {
         }
         """;
 
-    //?} else {
-    /*// Before 1.21.11 a program reads loose uniforms, and the region's offset is Iris's chunk offset. The pushes' block
-	// keeps the name the mod's own shader gives it, and is bound by index rather than looked up through Iris.
-	private static final String SWAY_SHADER = """
-			// Added by MC2 - Interactive Foliage: the foliage it draws sways as it does without a shader pack.
-			in float SwayCell;
-			in float SwayWeights;
-			uniform float mc2_SwayIntensity;
-			uniform float mc2_CalmSway;
-			uniform vec4 mc2_SwayEdge;
-			uniform vec4 mc2_Weather;
-			uniform ivec3 mc2_CameraBlockPos;
-			uniform vec3 mc2_CameraOffset;
-			uniform float mc2_GameTime;
-			#define MC2_MAX_CELLS 128
-			layout(std140) uniform FoliageInteraction {
-			    int mc2_CellCount;
-			    vec4 mc2_CellBoundsMin;
-			    vec4 mc2_CellBoundsMax;
-			    vec4 mc2_CellPosition[MC2_MAX_CELLS];
-			    vec4 mc2_CellForce[MC2_MAX_CELLS];
-			};
-			""" + SubLevelFoliageShader.withSway(readSway(), false) + """
-
-			void main() {
-			    vec3 mc2_offset = iris_ChunkOffset;
-			    mc2_swayedPosition = """ + SubLevelFoliageShader.BEND_OPEN + """
-			            mc2_sway(iris_Position + mc2_offset, mc2_offset, mc2_CameraBlockPos,
-			            mc2_CameraOffset, mc2_GameTime, SwayCell, SwayWeights)""" + SubLevelFoliageShader.BEND_CLOSE + """
-			             - mc2_offset;
-			    mc2_packMain();
-			}
-			""";
-	*/ //?}
-
     private static String readSway() {
         String path =
             "/assets/" + AllThingsFoliage.MOD_ID + "/shaders/include/sway.glsl";
@@ -1098,4 +872,3 @@ public final class IrisFoliageShaders {
         }
     }
 }
-//?}

@@ -24,6 +24,7 @@
 	"config.allthingsfoliage.preset.high": "High",
 	"config.allthingsfoliage.preset.ultra": "Ultra",
 	"config.allthingsfoliage.preset.visuals": "Visuals",
+	"config.allthingsfoliage.target_alive_only": "Target Alive Only",
 
 	"key.category.allthingsfoliage.general": "Interactive Foliage",
 	"key.allthingsfoliage.open_config": "Open Config",

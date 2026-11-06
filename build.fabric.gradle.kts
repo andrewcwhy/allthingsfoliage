@@ -35,9 +35,8 @@ platform {
 }
 
 loom {
-    accessWidenerPath = rootProject.file(
-        "src/main/resources/aw/${stonecutter.current.version}.accesswidener"
-    )
+    accessWidenerPath =
+        rootProject.file("src/main/resources/aw/${stonecutter.current.version}.accesswidener")
 
     runs {
         named("client") {
@@ -69,9 +68,8 @@ loom {
 
 fabricApi {
     configureDataGeneration {
-        outputDirectory = rootProject.file(
-            "versions/datagen/${stonecutter.current.version}/src/main/generated"
-        )
+        outputDirectory =
+            rootProject.file("versions/datagen/${stonecutter.current.version}/src/main/generated")
         client = true
     }
 }
@@ -101,9 +99,7 @@ dependencies {
     localRuntime("com.terraformersmc:modmenu:$modMenuVersion")
 
     // Compile against optional shader integrations without bundling them.
-    if (hasProperty("deps.iris")) {
-        compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
-    }
+    compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
 
     compileOnly("maven.modrinth:sodium:${prop("deps.sodium")}")
 }

@@ -1,19 +1,14 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//?} else {
-/*import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.shaders.ShaderSource;
-import com.mojang.blaze3d.shaders.ShaderType;
-*/ //?}
-import com.mojang.blaze3d.systems.RenderSystem;
-//? >=1.21.11 {
-
-//? >=26.3 {
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderSource;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
-import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.Util;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashSet;
@@ -21,14 +16,14 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.util.Util;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Draws foliage with the terrain's own shaders -- vanilla's, or the ones a resource pack puts in their place -- so it is
@@ -90,7 +85,6 @@ final class TerrainFoliageShader {
     }
     """;
 
-    //? >=26.3 {
     /**
      * What goes in next to Position's declaration: the mod's two per-vertex values, at locations well clear of the ones a
      * terrain shader gives its own inputs, the blocks the sway reads, and the sway.
@@ -98,8 +92,8 @@ final class TerrainFoliageShader {
     private static final String ADDITIONS = """
     layout(location = 14) in float SwayCell;
     layout(location = 15) in float SwayWeights;
-    #include <mc2_interactivefoliage:foliage_uniforms.glsl>
-    #include <mc2_interactivefoliage:sway.glsl>
+    #include <allthingsfoliage:foliage_uniforms.glsl>
+    #include <allthingsfoliage:sway.glsl>
     """;
     /** An include, by namespace and path under that namespace's shader includes, or relative to the file. */
     private static final Pattern INCLUDE = Pattern.compile(
@@ -145,26 +139,8 @@ final class TerrainFoliageShader {
         public void close() {}
     }
 
-    //?} else {
-    /*/^* Hands the compiler the spliced vertex shader, and every other shader as the game holds it. ^/
-	private static final ShaderSource SOURCE = (id, type) -> {
-		String source = Minecraft.getInstance().getShaderManager().getShader(id, type);
-		if (!id.equals(VERTEX) || type != ShaderType.VERTEX) {
-			return source;
-		}
-		String terrain = Minecraft.getInstance().getShaderManager().getShader(TERRAIN, ShaderType.VERTEX);
-		String spliced = terrain == null || source == null ? null : splice(terrain, source);
-		if (spliced == null) {
-			AllThingsFoliage.LOGGER.warn("The terrain vertex shader in use can't be read by the GPU foliage renderer; foliage "
-					+ "near the player is drawn with the renderer's own shaders, which may not match a resource pack's look");
-		}
-		return spliced;
-	};
-	*/ //?}
-
     private TerrainFoliageShader() {}
 
-    //? >=26.3 {
     /**
      * The pipeline compiled from the terrain shaders in use, or null where they could not be read that way or did not
      * compile. Each pipeline asked for is built once after each shader reload -- which shows as vanilla's own terrain
@@ -300,17 +276,6 @@ final class TerrainFoliageShader {
         return out.toString();
     }
 
-    //?} else {
-    /*/^*
-	 * Whether the pipeline compiles from the terrain shaders in use. It is compiled here the first time it is asked about
-	 * after each resource reload -- the game forgets every compiled pipeline then -- and the answer is kept alongside it,
-	 * so asking every frame costs a lookup.
-	 ^/
-	static boolean usable(RenderPipeline pipeline) {
-		return RenderSystem.getDevice().precompilePipeline(pipeline, SOURCE).isValid();
-	}
-	*/ //?}
-
     /** The terrain vertex shader with the mod's additions spliced in, or null if it isn't shaped the way that needs. */
     static String splice(String terrain, String additions) {
         if (!MAIN.matcher(terrain).find()) {
@@ -345,4 +310,3 @@ final class TerrainFoliageShader {
         );
     }
 }
-//?}

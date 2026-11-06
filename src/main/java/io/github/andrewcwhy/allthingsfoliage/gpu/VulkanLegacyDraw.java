@@ -1,7 +1,5 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-//? >=1.20.1 {
-
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -706,4 +704,3 @@ final class VulkanLegacyDraw {
         }
     }
 }
-//?}

@@ -30,20 +30,20 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-    id("dev.kikugie.stonecutter") version "0.9.2"
+    id("dev.kikugie.stonecutter") version "0.9.8"
 }
 
 stonecutter {
-	create(rootProject) {
-	    fun registerVersion(minecraftVersion: String, vararg loaders: String) {
+    create(rootProject) {
+        fun registerVersion(minecraftVersion: String, vararg loaders: String) {
             loaders.forEach { loader ->
-                version("$minecraftVersion-$loader", minecraftVersion)
-                    .buildscript = "build.$loader.gradle.kts"
+                version("$minecraftVersion-$loader", minecraftVersion).buildscript =
+                    "build.$loader.gradle.kts"
             }
         }
 
-		registerVersion("26.3", "fabric", "neoforge")
+        registerVersion("26.3", "fabric", "neoforge")
 
-		vcsVersion = "26.3-fabric"
-	}
+        vcsVersion = "26.3-fabric"
+    }
 }

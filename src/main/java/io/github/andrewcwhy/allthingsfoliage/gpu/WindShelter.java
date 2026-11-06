@@ -2,7 +2,6 @@ package io.github.andrewcwhy.allthingsfoliage.gpu;
 
 import io.github.andrewcwhy.allthingsfoliage.FoliageSettings;
 import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
-//? >=1.20.1 {
 
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -472,4 +471,3 @@ final class WindShelter {
         );
     }
 }
-//?}

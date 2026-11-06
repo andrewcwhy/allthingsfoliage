@@ -1,8 +1,7 @@
-package net.karto.mc2.mc2_interactivefoliage.mixin.blockgetter;
-
-//? neoforge && >=26.1.2 {
-
-/*import net.neoforged.fml.loading.FMLLoader;
+package io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter;
+//? neoforge {
+/*
+import net.neoforged.fml.loading.FMLLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -66,4 +65,5 @@ public final class BlockGetterMixinPlugin implements IMixinConfigPlugin {
 	public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 	}
 }
-*///?}
+*/
+//?}

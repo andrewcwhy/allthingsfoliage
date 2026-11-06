@@ -3,6 +3,7 @@
 import dev.kikugie.fletching_table.extension.FletchingTableExtension
 import dev.kikugie.stonecutter.StonecutterExperimentalAPI
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension
+import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -16,20 +17,19 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.jvm.tasks.Jar
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import javax.inject.Inject
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val Project.sc: StonecutterBuildExtension
     get() = extensions.getByType<StonecutterBuildExtension>()
 
 @OptIn(StonecutterExperimentalAPI::class)
-fun Project.prop(name: String): String =
-    sc.properties.get<String>(name)
+fun Project.prop(name: String): String = sc.properties.get<String>(name)
 
-fun Project.env(variable: String): String? =
-    providers.environmentVariable(variable).orNull
+fun Project.env(variable: String): String? = providers.environmentVariable(variable).orNull
 
 fun Project.envTrue(variable: String): Boolean =
     env(variable)?.equals("true", ignoreCase = true) == true
@@ -51,11 +51,9 @@ fun RepositoryHandler.strictMaven(
 }
 
 abstract class GenerateModManifestTask : DefaultTask() {
-    @get:Input
-    abstract val content: Property<String>
+    @get:Input abstract val content: Property<String>
 
-    @get:OutputFile
-    abstract val outputFile: RegularFileProperty
+    @get:OutputFile abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun generate() {
@@ -66,50 +64,63 @@ abstract class GenerateModManifestTask : DefaultTask() {
 }
 
 abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
-    override fun apply(project: Project) = with(project) {
-        val loaderId = buildFile.name
-            .removePrefix("build.")
-            .removeSuffix(".gradle.kts")
+    override fun apply(project: Project) =
+        with(project) {
+            val loaderId = buildFile.name.removePrefix("build.").removeSuffix(".gradle.kts")
 
-        val inferredLoader = Loader.of(loaderId)
+            val inferredLoader = Loader.of(loaderId)
 
-        val extension = extensions.create(
-            "platform",
-            ModPlatformExtension::class.java,
-        ).apply {
-            loader.convention(inferredLoader.id)
-            jarTask.convention(inferredLoader.jarTask)
-            sourcesJarTask.convention(inferredLoader.sourcesJarTask)
+            val extension =
+                extensions
+                    .create(
+                        "platform",
+                        ModPlatformExtension::class.java,
+                    )
+                    .apply {
+                        loader.convention(inferredLoader.id)
+                        jarTask.convention(inferredLoader.jarTask)
+                        sourcesJarTask.convention(inferredLoader.sourcesJarTask)
+                    }
+
+            listOf(
+                    "org.jetbrains.kotlin.jvm",
+                    "com.google.devtools.ksp",
+                    "dev.kikugie.fletching-table",
+                )
+                .forEach { pluginId ->
+                    apply(plugin = pluginId)
+                }
+
+            // Set toolchains before Loom or ModDevGradle configures its compile tasks.
+            extensions.configure<JavaPluginExtension> {
+                toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+            }
+            extensions.configure<KotlinJvmProjectExtension> {
+                jvmToolchain(25)
+            }
+
+            afterEvaluate {
+                val ctx =
+                    Context(
+                        project = this,
+                        extension = extension,
+                        loader = Loader.of(extension.loader.get()),
+                        stonecutter = sc,
+                    )
+
+                configureProject(ctx)
+            }
         }
-
-        listOf(
-            "org.jetbrains.kotlin.jvm",
-            "com.google.devtools.ksp",
-            "dev.kikugie.fletching-table",
-        ).forEach { pluginId ->
-            apply(plugin = pluginId)
-        }
-
-        afterEvaluate {
-            val ctx = Context(
-                project = this,
-                extension = extension,
-                loader = Loader.of(extension.loader.get()),
-                stonecutter = sc,
-            )
-
-            configureProject(ctx)
-        }
-    }
 
     private fun Project.configureProject(ctx: Context) {
         listOf(
-            "java",
-            "me.modmuss50.mod-publish-plugin",
-            "idea",
-        ).forEach { pluginId ->
-            apply(plugin = pluginId)
-        }
+                "java",
+                "me.modmuss50.mod-publish-plugin",
+                "idea",
+            )
+            .forEach { pluginId ->
+                apply(plugin = pluginId)
+            }
 
         version = ctx.fullVersion
         ctx.extension.requiredJava.set(ctx.javaVersion)
@@ -117,8 +128,7 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
         if (ctx.loader.isFabricLike) {
             ctx.extension.dependencies {
                 required("java") {
-                    fabricLikeVersionRange =
-                        ">=${ctx.javaVersion.majorVersion}"
+                    fabricLikeVersionRange = ">=${ctx.javaVersion.majorVersion}"
                 }
             }
         }
@@ -133,6 +143,7 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
         configureModPublishing(ctx)
 
         if (envTrue("PUB_MAVEN_ENABLE")) {
+            apply(plugin = "com.vanniktech.maven.publish")
             configureMavenPublishing(ctx)
         }
     }
@@ -148,20 +159,18 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
     }
 
     private fun Project.registerGenerateManifestTask(ctx: Context) {
-        val manifestOutputDirectory =
-            layout.buildDirectory.dir("generated/modManifest")
+        val manifestOutputDirectory = layout.buildDirectory.dir("generated/modManifest")
 
-        val generateManifest = tasks.register<GenerateModManifestTask>(
-            "generateModManifest"
-        ) {
-            content.set(ctx.loader.generateManifest(ctx))
+        val generateManifest =
+            tasks.register<GenerateModManifestTask>("generateModManifest") {
+                content.set(ctx.loader.generateManifest(ctx))
 
-            outputFile.set(
-                manifestOutputDirectory.map { directory ->
-                    directory.file(ctx.loader.modManifestPath)
-                }
-            )
-        }
+                outputFile.set(
+                    manifestOutputDirectory.map { directory ->
+                        directory.file(ctx.loader.modManifestPath)
+                    }
+                )
+            }
 
         the<JavaPluginExtension>().sourceSets.named("main") {
             resources.srcDir(manifestOutputDirectory)
@@ -185,8 +194,9 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
 
             exclude(ctx.loader.excludedResources)
 
-            // Preserve the existing exclusions for the current 26.3 setup.
+            // Ignore obsolete configurations if they remain in the resource directory.
             exclude(
+                "${ctx.modId}.mixins.json",
                 "*.polytone.mixins.json",
                 "*.snowrealmagic.mixins.json",
                 "*.snowrealmagic_neoforge.mixins.json",
@@ -239,11 +249,7 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
                 tasks.named("javadocJar"),
             )
 
-            into(
-                rootProject.layout.buildDirectory.dir(
-                    "libs/${ctx.basicVersion}"
-                )
-            )
+            into(rootProject.layout.buildDirectory.dir("libs/${ctx.basicVersion}"))
 
             dependsOn("build")
         }
