@@ -1,22 +1,15 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 //? fabric {
 
+import java.util.function.Predicate;
 import net.fabricmc.fabric.api.client.model.loading.v1.wrapper.WrapperBlockStateModel;
-
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
-
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-
 import net.minecraft.core.BlockPos;
-
 import net.minecraft.core.Direction;
-
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.function.Predicate;
 
 /**
  * Wraps the model of every foliage block so a chunk mesher leaves out the foliage the GPU renderer draws.

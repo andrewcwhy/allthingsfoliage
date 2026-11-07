@@ -2,6 +2,7 @@ package io.github.andrewcwhy.allthingsfoliage.gpu;
 
 import com.github.razorplay01.sway.api.SwayAPI;
 import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
+import io.github.andrewcwhy.allthingsfoliage.gpu.compat.SnowRealMagicCompat;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -12,13 +13,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.LongConsumer;
-
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
-
 import net.minecraft.client.renderer.chunk.RenderSectionRegion;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -47,7 +44,7 @@ public final class GpuFoliageSplit {
      * {@code WorldSlice} in its old package before. Null without Sodium, where vanilla's own region is the only
      * snapshot there is.
      */
-    
+
     private static final Class<?> SODIUM_LEVEL_SLICE = findClass(
         "net.caffeinemc.mods.sodium.client.world.LevelSlice"
     );
@@ -65,64 +62,6 @@ public final class GpuFoliageSplit {
     }
 
     private record MeshDecision(long sectionKey, boolean leftFoliage) {}
-
-    /**
-     * The chunk columns of the sub-levels the renderer draws the foliage of, which lie in a plot far from the player
-     * and count as near all the same; see SableBridge. Written by the render thread, read by the meshing threads.
-     */
-    private static final Set<Long> PLOT_COLUMNS = ConcurrentHashMap.newKeySet();
-    /**
-     * Sections of a plot a chunk build met foliage in and kept it, for the renderer to take up: that build is how the
-     * renderer learns a sub-level is there at all. Written by the meshing threads, emptied by the render thread.
-     * <p>
-     * They are noted whether or not the renderer has an area yet, and kept until it asks: Sable builds a sub-level's
-     * sections as the world is first drawn and again as a shader pack is switched, which is before the renderer's
-     * first frame after either, and a section noted only while there was an area was never heard of again -- its
-     * foliage stayed in Sable's mesh for good.
-     */
-    private static final Set<Long> PLOT_FOUND = ConcurrentHashMap.newKeySet();
-
-    private static long columnKey(int chunkX, int chunkZ) {
-        return (
-            ((long) chunkX & 0xFFFFFFFFL) |
-            (((long) chunkZ & 0xFFFFFFFFL) << 32)
-        );
-    }
-
-    /** Render thread: the foliage of this column of a plot is the renderer's from now on. */
-    static void addPlotColumn(int chunkX, int chunkZ) {
-        if (PLOT_COLUMNS.add(columnKey(chunkX, chunkZ))) {
-            generation++;
-        }
-    }
-
-    /** Render thread: the sub-level this column of a plot held is gone, or no longer the renderer's. */
-    static void removePlotColumn(int chunkX, int chunkZ) {
-        if (PLOT_COLUMNS.remove(columnKey(chunkX, chunkZ))) {
-            generation++;
-        }
-    }
-
-    /** Render thread: no sub-level's foliage is the renderer's any more. */
-    static void clearPlots() {
-        if (!PLOT_COLUMNS.isEmpty()) {
-            PLOT_COLUMNS.clear();
-            generation++;
-        }
-    }
-
-    /** Render thread: hands over each section of a plot a chunk build has met foliage in since last asked. */
-    static void forEachPlotFound(LongConsumer found) {
-        if (PLOT_FOUND.isEmpty()) {
-            return;
-        }
-        var keys = PLOT_FOUND.iterator();
-        while (keys.hasNext()) {
-            long key = keys.next();
-            keys.remove();
-            found.accept(key);
-        }
-    }
 
     /** A chunk mesh built for this section has just replaced the one on screen. */
     private record MeshSwap(long sectionKey) {}
@@ -232,7 +171,7 @@ public final class GpuFoliageSplit {
      * geometry the GPU is about to move again. Meshing goes through these instead: they sit inside Sway's
      * wrapper and hand over plain geometry.
      */
-    
+
     private static final Map<BlockState, BlockStateModel> GPU_MODELS =
         new IdentityHashMap<>();
 
@@ -250,17 +189,18 @@ public final class GpuFoliageSplit {
      * piston, a falling block, the GPU renderer meshing its own sections -- always gets the full geometry.
      */
     public static boolean leaveToGpu(BlockAndTintGetter level, BlockPos pos) {
-        
         boolean chunkBuild = level instanceof RenderSectionRegion;
 
         if (
-            !chunkBuild &&
-            (SODIUM_LEVEL_SLICE == null ||
-                !SODIUM_LEVEL_SLICE.isInstance(level)) &&
-            !VulkanBridge.isChunkBuild(level)
+            !chunkBuild
+                && (
+                    SODIUM_LEVEL_SLICE == null
+                        || !SODIUM_LEVEL_SLICE.isInstance(level)
+                )
         ) {
             return false;
         }
+
         return decide(pos);
     }
 
@@ -285,17 +225,7 @@ public final class GpuFoliageSplit {
         }
         Area current = area;
         boolean near = current != null && current.contains(sectionX, sectionZ);
-        // A sub-level's blocks are far from the player, in a plot of their own, and are the renderer's as near ones are.
-        boolean plot =
-            !near &&
-            SableBridge.LOADED &&
-            (PLOT_COLUMNS.contains(columnKey(sectionX, sectionZ)) ||
-                SableBridge.inPlot(sectionX, sectionZ));
-        boolean leave =
-            current != null && (near || plot) && GPU_READY.contains(sectionKey);
-        if (plot && !leave) {
-            PLOT_FOUND.add(sectionKey);
-        }
+        boolean leave = near && GPU_READY.contains(sectionKey);
         last.sectionKey = sectionKey;
         last.leftFoliage = leave;
         last.generation = currentGeneration;
@@ -584,12 +514,7 @@ public final class GpuFoliageSplit {
     /** Whether the GPU renderer draws the foliage of this chunk column. */
     static boolean isNear(int chunkX, int chunkZ) {
         Area current = area;
-        return (
-            current != null &&
-            (current.contains(chunkX, chunkZ) ||
-                (!PLOT_COLUMNS.isEmpty() &&
-                    PLOT_COLUMNS.contains(columnKey(chunkX, chunkZ))))
-        );
+        return current != null && current.contains(chunkX, chunkZ);
     }
 
     static boolean hasArea() {
@@ -627,7 +552,6 @@ public final class GpuFoliageSplit {
         REMESH_ON_SWAP.clear();
         REMESH_NOW.clear();
         AWAITING_GROUP.clear();
-        PLOT_COLUMNS.clear();
         generation++;
     }
 

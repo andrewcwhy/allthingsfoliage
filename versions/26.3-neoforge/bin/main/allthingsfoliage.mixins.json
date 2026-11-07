@@ -1,11 +1,19 @@
 {
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
-	"required": true,
-	"minVersion": "0.8",
-	"compatibilityLevel": "${java}",
+	"client": ["passability.LeavesBlockMixin", "render.EntityRendererMixin"],
+	"compatibilityLevel": "JAVA_25",
 	"injectors": {
 		"defaultRequire": 1
 	},
-	"mixins": [],
-	"client": []
+	"minVersion": "0.8",
+	"mixins": [
+		"passability.BlockMixin",
+		"passability.BlockStateCacheMixin",
+		"passability.BlockStateMixin",
+		"passability.FlowingFluidMixin",
+		"passability.LivingEntityMixin",
+		"passability.MultifaceBlockMixin",
+		"pathfinding.WalkNodeEvaluatorMixin"
+	],
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
+	"required": true
 }

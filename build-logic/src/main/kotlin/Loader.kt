@@ -68,21 +68,21 @@ sealed class Loader(val id: String) {
                     entrypoints =
                         mapOf(
                             "main" to
-                                listOf(
-                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricEntrypoint"
-                                ),
+                                    listOf(
+                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricEntrypoint"
+                                    ),
                             "client" to
-                                listOf(
-                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricClientEntrypoint"
-                                ),
+                                    listOf(
+                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricClientEntrypoint"
+                                    ),
                             "fabric-datagen" to
-                                listOf(
-                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.datagen.FabricDataGeneratorEntrypoint"
-                                ),
+                                    listOf(
+                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.datagen.FabricDataGeneratorEntrypoint"
+                                    ),
                             "modmenu" to
-                                listOf(
-                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricModMenuIntegration"
-                                ),
+                                    listOf(
+                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricModMenuIntegration"
+                                    ),
                         ),
                     mixins =
                         buildList {
@@ -90,7 +90,8 @@ sealed class Loader(val id: String) {
                             if (ctx.shaderPackSupport) {
                                 add("${ctx.modId}.iris.mixins.json")
                             }
-                            add("${ctx.modId}.pass.mixins.json")
+                            add("${ctx.modId}.passability.mixins.json")
+                            add("${ctx.modId}.render.mixins.json")
                             add("${ctx.modId}.targeting.mixins.json")
                         },
                     depends =
@@ -187,7 +188,8 @@ sealed class Loader(val id: String) {
                                 add(ForgeMixin("${ctx.modId}.iris.mixins.json"))
                             }
                             add(ForgeMixin("${ctx.modId}.blockgetter.mixins.json"))
-                            add(ForgeMixin("${ctx.modId}.pass.mixins.json"))
+                            add(ForgeMixin("${ctx.modId}.render.mixins.json"))
+                            add(ForgeMixin("${ctx.modId}.passability.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.targeting.mixins.json"))
                         },
                     accessTransformers =

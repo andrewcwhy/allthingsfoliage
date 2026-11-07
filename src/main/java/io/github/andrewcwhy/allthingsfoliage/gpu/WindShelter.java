@@ -1,8 +1,7 @@
 package io.github.andrewcwhy.allthingsfoliage.gpu;
 
-import io.github.andrewcwhy.allthingsfoliage.FoliageSettings;
+import io.github.andrewcwhy.allthingsfoliage.Config;
 import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
-
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ByteOpenHashMap;
@@ -416,7 +415,7 @@ final class WindShelter {
 
     /** Reads the settings' wind walls again when they have changed, and measures every state again with them. */
     private static void refreshWindWalls() {
-        List<String> ids = FoliageSettings.windWalls();
+        List<String> ids = Config.windWalls();
         if (ids.equals(windWallIds)) {
             return;
         }

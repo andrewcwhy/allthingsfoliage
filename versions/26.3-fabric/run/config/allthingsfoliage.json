@@ -1,0 +1,25 @@
+{
+  "gpuRenderer": true,
+  "gpuDistance": "adaptive",
+  "wavingFoliage": true,
+  "wavingLeaves": true,
+  "weatherWind": true,
+  "weatherWindDistance": "half",
+  "wavingIntensity": 1.0,
+  "defaultRadiusApplied": true,
+  "targetAliveOnly": true,
+  "windWalls": [],
+  "passability": {
+    "fallDamageMultiplier": 0.5,
+    "fallDamageThreshold": 20,
+    "speedMultiplierHorizontal": 0.9,
+    "speedMultiplierVertical": 0.9,
+    "modifyPathFinding": true,
+    "playerOnly": false,
+    "alwaysNotViewBlocking": true,
+    "alwaysLeafWalking": true,
+    "headHitter": false,
+    "soundsPlayerOnly": false,
+    "soundVolume": 1.0
+  }
+}

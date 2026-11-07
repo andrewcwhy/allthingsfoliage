@@ -6,96 +6,42 @@ import com.github.razorplay01.sway.api.behavior.contributors.DeformationContribu
 import com.github.razorplay01.sway.api.behavior.contributors.MultiBlockContributor;
 import com.github.razorplay01.sway.client.behavior.multiblock.HangingVineMultiblockBehavior;
 import com.github.razorplay01.sway.config.SwayConfig;
-
-import com.mojang.renderpearl.api.GpuFormat;
-import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
-
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
-import com.mojang.renderpearl.api.pipeline.DepthStencilState;
-import com.mojang.renderpearl.api.pipeline.CompareOp;
-
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-
-import com.mojang.blaze3d.pipeline.RenderTarget;
-
 import com.mojang.renderpearl.api.pipeline.UniformType;
-import com.mojang.renderpearl.api.commands.RenderPass;
-
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.renderpearl.api.vertex.VertexFormatElement;
+import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
+import io.github.andrewcwhy.allthingsfoliage.Config;
+import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
+import io.github.andrewcwhy.allthingsfoliage.gpu.compat.IrisCompat;
+import io.github.andrewcwhy.allthingsfoliage.gpu.compat.SnowRealMagicCompat;
+import io.github.andrewcwhy.allthingsfoliage.gpu.compat.SodiumBridge;
+import io.github.andrewcwhy.allthingsfoliage.gpu.compat.TerrainSlabsCompat;
+import io.github.andrewcwhy.allthingsfoliage.gpu.shader.IrisVertexExtension;
+import io.github.andrewcwhy.allthingsfoliage.gpu.shader.SodiumFoliageShader;
+import io.github.andrewcwhy.allthingsfoliage.gpu.shader.TerrainFoliageShader;
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-
-import com.mojang.renderpearl.api.vertex.VertexFormat;
-import com.mojang.renderpearl.api.vertex.VertexFormatElement;
-
-import io.github.andrewcwhy.allthingsfoliage.FoliageSettings;
-import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-
-import net.minecraft.client.renderer.BindGroupLayouts;
-
-import net.minecraft.client.renderer.DynamicGpuData;
-
-import net.minecraft.client.renderer.RenderPipelines;
-
-import net.minecraft.client.renderer.block.BlockQuadOutput;
-import net.minecraft.client.renderer.block.BlockStateModelSet;
-
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.culling.Frustum;
-
-import net.minecraft.client.renderer.state.level.LevelRenderState;
-
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
-import net.minecraft.util.Mth;
-
-import net.minecraft.resources.Identifier;
-
-import net.minecraft.world.level.block.LeavesBlock;
-import net.minecraft.world.level.block.PipeBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import org.joml.FrustumIntersection;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,9 +51,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
-
 import java.util.Set;
 import java.util.function.Predicate;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.DynamicGpuData;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.block.BlockQuadOutput;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * Draws the foliage near the player, the part {@link GpuFoliageSplit} took out of the chunk mesh, and
@@ -268,7 +246,7 @@ public final class GpuFoliageRenderer {
     // pipeline whose first one is the block format, collapsing them to the single one a shader pack wants.
     // Sharing one format keeps this pipeline unmistakably the mod's own, and matches what older versions,
     // which read one vertex buffer per pipeline, can do anyway.
-    
+
     private static final VertexFormat FOLIAGE_FORMAT = foliageFormat();
 
     private static VertexFormat foliageFormat() {
@@ -289,7 +267,7 @@ public final class GpuFoliageRenderer {
      * frame without recompiling anything.
      */
     private static final String SWAY_SETTINGS_UNIFORM = "FoliageSway";
-    
+
     private static final BindGroupLayout SWAY_SETTINGS =
         BindGroupLayout.builder()
             .withUniform(SWAY_SETTINGS_UNIFORM, UniformType.UNIFORM_BUFFER)
@@ -310,7 +288,7 @@ public final class GpuFoliageRenderer {
      * blend state -- and only swaps in our shaders and adds the sway weight binding and the sway settings.
      * The shader files are discovered by resource pack scanning, so no registration call is needed.
      */
-    
+
     // Vanilla's block snippet is private again on 26.3, so what it holds is listed: the uniform blocks and samplers the
     // shaders read, the block format with the mod's two values, and the depth state every block pipeline uses. The
     // foliage is drawn into vanilla's own pass, which writes one colour target; a pipeline whose targets do not match
@@ -496,11 +474,11 @@ public final class GpuFoliageRenderer {
 
     /** The format the regions hold: the mod's own, or the one a shader pack's programs read while one is loaded. */
     private static VertexFormat regionFormat() {
-        
+
         return meshedForShaderPack
             ? IrisCompat.shaderPackFormat()
             : FOLIAGE_FORMAT;
-        
+
     }
 
     /** Our own per-vertex data: the plant's anchor block and its two weights, one float each. */
@@ -620,17 +598,17 @@ public final class GpuFoliageRenderer {
     private static final float SNOW_LADEN_WIND = 0.80F;
 
     private static ModelBlockRenderer modelRenderer;
-    
+
     /**
      * The same, drawing every face, culled or not: for leaves touching a block they part from as they wave (see
      * partsFromNeighbour), whose faces against it the chunk mesh hides, and which would leave a hole there as they move
      * away from it.
      */
     private static ModelBlockRenderer uncullingRenderer;
-    
+
     /** Whether the renderer is in charge of the near foliage, following the waving foliage setting. */
     private static boolean active;
-    
+
     /** Set when every buffer was thrown away, so the chunks already loaded get queued again. */
     private static boolean reseedPending;
     /**
@@ -655,9 +633,9 @@ public final class GpuFoliageRenderer {
     private static double shelterCheckedX;
     private static double shelterCheckedZ;
     private static int meshedPackGeneration;
-    
+
     private static boolean shaderPackSetUp;
-    
+
     /** The pipeline drawn with while a shader pack is loaded; see {@link IrisFoliageShaders}. */
     private static RenderPipeline shaderPackPipeline;
     /** The same, for drawing into a shader pack's shadow map. */
@@ -674,9 +652,9 @@ public final class GpuFoliageRenderer {
     private static final Vector4f UPLOADED_WEATHER = new Vector4f(Float.NaN);
 
     /** Reused by every rebuild and grown to the largest section seen, so no rebuild has a size limit. */
-    
+
     private static ByteBufferBuilder vertexScratch;
-    
+
     private static ByteBuffer weightScratch;
 
     /** This frame's draw calls, three ints each: index into the drawn regions, first vertex, vertex count. */
@@ -780,7 +758,7 @@ public final class GpuFoliageRenderer {
         final Section[] uploadedSections = new Section[SECTIONS_PER_REGION];
         /** When the region first had a change waiting to be uploaded. */
         long pendingSince;
-        
+
         GpuBuffer vertices;
 
         Region(long regionKey) {
@@ -850,7 +828,7 @@ public final class GpuFoliageRenderer {
             if (cutoutBytes + opaqueBytes == 0) {
                 return true;
             }
-            
+
             var encoder = RenderSystem.getDevice().createCommandEncoder();
             if (cutoutBytes > 0) {
                 encoder.writeToBuffer(
@@ -868,14 +846,14 @@ public final class GpuFoliageRenderer {
                 );
             }
             return true;
-            
+
         }
 
         void upload() {
             // Before 1.21.11 the buffer is uploaded over rather than deleted and made again.
-            
+
             closeBuffers();
-            
+
             int vertexCount = 0;
             occupiedCount = 0;
             for (int slot = 0; slot < SECTIONS_PER_REGION; slot++) {
@@ -899,7 +877,7 @@ public final class GpuFoliageRenderer {
                 occupiedCount == 0
                     ? VERTEX_BYTES + WEIGHT_BYTES
                     : sections[occupied[0]].stride;
-            
+
             // Staging memory is borrowed rather than asked for: uploads happen one after another on the
             // render thread, and a region can be hundreds of kilobytes, so this saves an allocation and a
             // free every time any section in any region changes.
@@ -928,7 +906,7 @@ public final class GpuFoliageRenderer {
                 GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
                 vertexData
             );
-            
+
             markSectionsReady();
         }
 
@@ -1004,7 +982,7 @@ public final class GpuFoliageRenderer {
                 vertices.close();
                 vertices = null;
             }
-            
+
             if (chunkSection != null) {
                 chunkSection.close();
                 chunkSection = null;
@@ -1014,7 +992,7 @@ public final class GpuFoliageRenderer {
             // all. What was prepared from them is not drawn then; the next frame is prepared from what is there.
             pendingDraw = null;
             pendingLevelUniforms = null;
-            
+
         }
 
         void free() {
@@ -1797,7 +1775,7 @@ public final class GpuFoliageRenderer {
      */
     private static void followRain(Minecraft minecraft) {
         boolean raining =
-            FoliageSettings.weatherWind() &&
+            Config.weatherWind() &&
             minecraft.level != null &&
             minecraft.level.getRainLevel(1.0F) > 0.0F;
         if (raining != shelterActive) {
@@ -1841,7 +1819,7 @@ public final class GpuFoliageRenderer {
      * half of the renderer's area, or no edge at all.
      */
     private static float weatherWindReach() {
-        return switch (FoliageSettings.weatherWindDistance()) {
+        return switch (Config.weatherWindDistance()) {
             case PERFORMANCE -> SwayConfig.INSTANCE.maxDistance;
             case HALF -> ((GpuFoliageSplit.radius() + 0.5F) * SECTION_SIZE) /
                 2.0F;
@@ -1908,9 +1886,9 @@ public final class GpuFoliageRenderer {
         // The renderer snapshots options such as smooth lighting, which are among the things that
         // land here, so it is rebuilt from the current options on next use.
         modelRenderer = null;
-        
+
         uncullingRenderer = null;
-        
+
         // Nothing queues the chunks that are already loaded again: with Sodium in charge a resource
         // reload rebuilds its own meshes without passing any hook. They are rediscovered on next draw.
         reseedPending = true;
@@ -2014,16 +1992,16 @@ public final class GpuFoliageRenderer {
 
     /** The lowest section of the world. */
     private static int minSectionY(ClientLevel level) {
-        
+
         return level.getMinSectionY();
-        
+
     }
 
     /** The highest section of the world, itself included. */
     private static int maxSectionY(ClientLevel level) {
-        
+
         return level.getMaxSectionY();
-        
+
     }
 
     private static long regionKeyOf(long sectionKey) {
@@ -2111,7 +2089,7 @@ public final class GpuFoliageRenderer {
         // frame, which is available whether or not Sodium owns the terrain renderer.
         var cameraState = levelState.cameraRenderState;
         boolean hasCamera = cameraState != null && cameraState.pos != null;
-        
+
         // Nothing from an earlier frame is drawn, whatever this one decides.
         pendingDraw = null;
         pendingLevelUniforms = null;
@@ -2120,7 +2098,7 @@ public final class GpuFoliageRenderer {
         }
 
         Frustum frustum = hasCamera ? cameraState.cullFrustum : null;
-        
+
         drawFrame(hasCamera ? cameraState.pos : null, frustum);
     }
 
@@ -2148,24 +2126,20 @@ public final class GpuFoliageRenderer {
         if (WavingWhitelist.followGameLeaves(canDrawOpaqueLeaves())) {
             foliageListChanged();
         }
-        // Where the chunk mesher cannot be told to leave foliage out, the renderer stays out of the way too, or every
-        // plant it drew would be drawn twice.
-        if (
-            !FoliageSettings.gpuRenderer() ||
-            !SodiumBridge.canSplitChunkMeshes() ||
-            VulkanBridge.keepsRendererOut()
-        ) {
+        // Where the chunk mesher cannot exclude foliage, disable the renderer
+        // to prevent plants from being drawn twice.
+        if (!Config.gpuRenderer() || !SodiumBridge.canSplitChunkMeshes()) {
             if (active) {
                 deactivate(minecraft);
             }
             return;
         }
         boolean shaderPack = IrisCompat.shaderPackInUse();
-        
+
         if (shaderPack) {
             setUpShaderPack();
         }
-        
+
         // Drawn through a shader pack only with the programs built for it. Where they could not be, the chunk mesh keeps
         // the foliage for as long as that pack is loaded, drawn by the pack as it draws any other block.
         if (shaderPack && !IrisCompat.programsReady()) {
@@ -2195,7 +2169,7 @@ public final class GpuFoliageRenderer {
             return;
         }
         updateNearArea(minecraft);
-        
+
         followWindEdge();
         followRain(minecraft);
         // Near sections whose build is on screen still holding their foliage are asked for again; see
@@ -2236,7 +2210,7 @@ public final class GpuFoliageRenderer {
         if (anything) {
             submitDraws(minecraft, camera, null, null, null, null);
         }
-        
+
     }
 
     /**
@@ -2248,7 +2222,7 @@ public final class GpuFoliageRenderer {
             return;
         }
         shaderPackSetUp = true;
-        
+
         // Compiled by the game first, from the mod's own shaders, and handed to Iris, which draws it with the pack's
         // terrain cutout program instead while the level is drawn. It holds Iris's terrain format, so that program finds
         // every attribute it reads, and draws into vanilla's pass, whose one colour target it has to match.
@@ -2313,11 +2287,11 @@ public final class GpuFoliageRenderer {
             .withBindGroupLayout(GpuFoliageInteraction.LAYOUT)
             .build();
         IrisCompat.setUpOpaque(shaderPackOpaquePipeline);
-        
+
     }
 
     /** Holds the sun's projection for drawing into a shadow map: a shader pack's, or Polytone's. */
-    
+
     private static net.minecraft.client.renderer.ProjectionMatrixBuffer shadowProjectionUniform;
 
     private static net.minecraft.client.renderer.ProjectionMatrixBuffer shadowProjectionBuffer() {
@@ -2340,23 +2314,23 @@ public final class GpuFoliageRenderer {
      * Every section near the player the chunk mesh left its foliage out of is drawn, as for a shader pack's shadow map:
      * the camera's frustum does not say what casts a shadow into view.
      */
-    
+
     public static void drawPolytoneShadow(
         Matrix4f shadowMatrix,
         GpuTextureView color,
         GpuTextureView depth
     ) {
-        
+
         Minecraft minecraft = Minecraft.getInstance();
         if (!active || meshedForShaderPack || minecraft.level == null) {
             return;
         }
-        
+
         Vec3 camera = minecraft.gameRenderer.mainCamera().position();
-        
+
         if (collectDraws(null, null)) {
             // The whole of the sun's transform is in the projection, so the view is left as none at all.
-            
+
             submitDraws(
                 minecraft,
                 camera,
@@ -2365,25 +2339,8 @@ public final class GpuFoliageRenderer {
                 color,
                 depth
             );
-            
+
         }
-    }
-
-    /** Set while the foliage is drawn into Beryl's shadow map, which only Beryl's own shadow shaders may draw into. */
-    private static boolean berylShadowPass;
-
-    /**
-     * Draws the foliage into Beryl's shadow map, called once Beryl has drawn its terrain into it and before it draws the
-     * entities, so plants cast shadows that sway with them. Beryl draws its shadow map from its own chunk meshes, which
-     * the foliage was left out of. The targets are the ones Beryl has the game draw the entities' shadows into, and the
-     * pipeline is Beryl's own for the shadow map, put under the mod's by {@link BerylBridge}: it places each vertex by
-     * the light's matrix, which Beryl hands it, so no matrix is handed over here.
-     * <p>
-     * Every section near the player the chunk mesh left its foliage out of is drawn, as for a shader pack's shadow map:
-     * the camera's frustum does not say what casts a shadow into view.
-     */
-    public static void drawBerylShadow() {
-        
     }
 
     /**
@@ -2408,7 +2365,7 @@ public final class GpuFoliageRenderer {
             return;
         }
         boolean anything = collectDraws(null, null);
-        
+
         if (anything) {
             drawIntoShadowMap(
                 minecraft,
@@ -2417,7 +2374,7 @@ public final class GpuFoliageRenderer {
                 projection
             );
         }
-        
+
     }
 
     /**
@@ -2450,7 +2407,7 @@ public final class GpuFoliageRenderer {
             }
             // A region wholly inside the frustum needs no per-section frustum test. Its unpadded box is
             // used, so a section whose padding pokes outside is simply drawn -- never wrongly dropped.
-            
+
             Frustum sectionFrustum =
                 frustum != null &&
                 frustum.cubeInFrustum(region.blockBounds) ==
@@ -2746,7 +2703,7 @@ public final class GpuFoliageRenderer {
                     // frame it is switched in. The foliage is left out of the frame rather than the game ended.
                     if (!pipelineRefused) {
                         pipelineRefused = true;
-                        AllThingsFoliage.LOGGER.error(
+                        AllThingsFoliage.logger.error(
                             "The level's pass refused the GPU foliage pipeline; the foliage it " +
                                 "holds is not drawn while it does",
                             e
@@ -3049,7 +3006,7 @@ public final class GpuFoliageRenderer {
             compiled = RenderSystem.getCompiledPipelineNullable(requested);
         } catch (RuntimeException e) {
             // A shader that does not compile is thrown rather than handed back as null.
-            AllThingsFoliage.LOGGER.error(
+            AllThingsFoliage.logger.error(
                 "The GPU foliage pipeline did not compile; the foliage it holds is not drawn",
                 e
             );
@@ -3117,12 +3074,12 @@ public final class GpuFoliageRenderer {
         if (minecraft.level == null) {
             return new Vector4f();
         }
-        
+
         float partialTick = minecraft
             .getDeltaTracker()
             .getGameTimeDeltaPartialTick(false);
-        
-        if (!FoliageSettings.weatherWind()) {
+
+        if (!Config.weatherWind()) {
             return new Vector4f();
         }
         // Past the reach the wind eases off, so the shader is told both.
@@ -3139,14 +3096,14 @@ public final class GpuFoliageRenderer {
      * the weather wind blows just as well with the calm sway switched off.
      */
     private static float swayIntensity() {
-        return FoliageSettings.wavingFoliage()
-            ? FoliageSettings.wavingIntensity()
-            : FoliageSettings.DEFAULT_WAVING_INTENSITY;
+        return Config.wavingFoliage()
+            ? Config.wavingIntensity()
+            : Config.DEFAULT_WAVING_INTENSITY;
     }
 
     /** 1 while plants sway in calm weather, 0 while they stand still until the weather wind moves them. */
     private static float calmSway() {
-        return FoliageSettings.wavingFoliage() ? 1.0F : 0.0F;
+        return Config.wavingFoliage() ? 1.0F : 0.0F;
     }
 
     /**
@@ -3338,7 +3295,7 @@ public final class GpuFoliageRenderer {
 
     /** Called once a frame, after the rebuilds and the upload. */
     private static void measureBurst() {
-        if (!MEASURE_TO_LOG && !AllThingsFoliage.LOGGER.isDebugEnabled()) {
+        if (!MEASURE_TO_LOG && !AllThingsFoliage.logger.isDebugEnabled()) {
             return;
         }
         if (!DIRTY.isEmpty() || !DIRTY_REGIONS.isEmpty()) {
@@ -3382,9 +3339,9 @@ public final class GpuFoliageRenderer {
                 burstWeightNanos / 1.0E6D
             );
             if (MEASURE_TO_LOG) {
-                AllThingsFoliage.LOGGER.info(report);
+                AllThingsFoliage.logger.info(report);
             } else {
-                AllThingsFoliage.LOGGER.debug(report);
+                AllThingsFoliage.logger.debug(report);
             }
         }
         burstStartNanos = 0L;
@@ -3565,7 +3522,7 @@ public final class GpuFoliageRenderer {
      * setting asks. It is read every frame, so changing either takes effect at once.
      */
     static int nearRadius(int renderDistance) {
-        int radius = switch (FoliageSettings.gpuDistance()) {
+        int radius = switch (Config.gpuDistance()) {
             case PERFORMANCE -> pushRadius();
             case ADAPTIVE -> adaptiveRadius(renderDistance);
             case HALF -> renderDistance / 2;
@@ -3677,38 +3634,22 @@ public final class GpuFoliageRenderer {
      */
     private static void deactivate(Minecraft minecraft) {
         active = false;
-        // Sable's meshes take back the foliage of its sub-levels, as the chunk mesh does the world's below.
-        GpuFoliageSplit.clearPlots();
-        for (long key : PLOT_OWNERS.keySet()) {
-            rebuildChunkMesh(
-                minecraft,
-                SectionPos.x(key),
-                SectionPos.y(key),
-                SectionPos.z(key)
-            );
-        }
-        PLOT_OWNERS.clear();
-        SUB_LEVELS.clear();
+
         if (GpuFoliageSplit.hasArea()) {
-            int centreX = GpuFoliageSplit.centreX();
-            int centreZ = GpuFoliageSplit.centreZ();
+            int centerX = GpuFoliageSplit.centreX();
+            int centerZ = GpuFoliageSplit.centreZ();
             int radius = GpuFoliageSplit.radius();
-            // Cleared before any column is queued, so none of their builds can still find itself near.
+
+            // Clear the area before queuing remeshes so builds cannot detect it.
             GpuFoliageSplit.clearArea();
-            for (
-                int chunkX = centreX - radius;
-                chunkX <= centreX + radius;
-                chunkX++
-            ) {
-                for (
-                    int chunkZ = centreZ - radius;
-                    chunkZ <= centreZ + radius;
-                    chunkZ++
-                ) {
+
+            for (int chunkX = centerX - radius; chunkX <= centerX + radius; chunkX++) {
+                for (int chunkZ = centerZ - radius; chunkZ <= centerZ + radius; chunkZ++) {
                     remeshColumn(minecraft, chunkX, chunkZ, false);
                 }
             }
         }
+
         discardAll();
     }
 
@@ -3811,9 +3752,9 @@ public final class GpuFoliageRenderer {
         int sectionY,
         int sectionZ
     ) {
-        
+
         minecraft.levelExtractor.setSectionDirty(sectionX, sectionY, sectionZ);
-        
+
         SodiumBridge.scheduleRebuild(sectionX, sectionY, sectionZ);
     }
 
@@ -4092,7 +4033,7 @@ public final class GpuFoliageRenderer {
             return;
         }
         warnedWeightCountMismatch = true;
-        AllThingsFoliage.LOGGER.warn(
+        AllThingsFoliage.logger.warn(
             "Foliage was meshed with {} vertices but {} sway weights, so the GPU renderer " +
                 "left it to the chunk mesh. Another mod is writing vertices the mod cannot see.",
             vertices,
@@ -4105,7 +4046,7 @@ public final class GpuFoliageRenderer {
             return;
         }
         warnedForeignVertexFormat = true;
-        AllThingsFoliage.LOGGER.warn(
+        AllThingsFoliage.logger.warn(
             "Foliage was meshed in {} rather than the block format, so the GPU renderer " +
                 "left it to the chunk mesh. Another mod is widening the mod's vertex buffer.",
             format
@@ -4158,10 +4099,10 @@ public final class GpuFoliageRenderer {
             return;
         }
         normalsDropped = false;
-        
+
         if (modelRenderer == null) {
             // Same arguments the section compiler passes, so the geometry matches it exactly.
-            
+
             // The second argument is whether faces against a neighbour hiding them are culled, as the section compiler
             // always has them.
             modelRenderer = new ModelBlockRenderer(
@@ -4174,14 +4115,14 @@ public final class GpuFoliageRenderer {
                 false,
                 minecraft.getBlockColors()
             );
-            
+
         }
         if (vertexScratch == null) {
-            
+
             vertexScratch = new ByteBufferBuilder(
                 VERTEX_BYTES * 4 * INITIAL_SCRATCH_QUADS
             );
-            
+
             weightScratch = MemoryUtil.memAlloc(
                 WEIGHT_BYTES * 4 * INITIAL_SCRATCH_QUADS
             );
@@ -4216,7 +4157,7 @@ public final class GpuFoliageRenderer {
             PrimitiveTopology.QUADS,
             DefaultVertexFormat.BLOCK
         );
-        
+
         // Vanilla writes the standard attributes; alongside each quad we append the sway weight of its
         // four vertices, so both bindings stay in step without touching its output.
         SwayAnchor anchor = new SwayAnchor();
@@ -4225,7 +4166,7 @@ public final class GpuFoliageRenderer {
         // A tree's leaves are sheltered corner by corner, on their own terms; see WindShelter.cornerExposure.
         anchor.fieldShelter =
             shelter == null ? null : new WindShelter(level, origin, true);
-        
+
         BlockQuadOutput output = (x, y, z, quad, instance) -> {
             builder.putBlockBakedQuad(x, y, z, quad, instance);
             noteSprite(quad.materialInfo().sprite());
@@ -4260,7 +4201,7 @@ public final class GpuFoliageRenderer {
         BlockStateModelSet models = minecraft
             .getModelManager()
             .getBlockStateModelSet();
-        
+
         // Blocks are read from the section itself: going through the level would look the chunk up again
         // for every one of its 4096 blocks.
         LevelChunkSection blocks = level
@@ -4409,7 +4350,7 @@ public final class GpuFoliageRenderer {
                         float lift =
                             TerrainSlabsCompat.offsetY(level, pos, state) +
                             raised;
-                        
+
                         if (meshedForShaderPack) {
                             // The pack reads which block each vertex belongs to, and where its centre is, as it does on the
                             // chunk mesh; Iris writes them as the vertices go in.
@@ -4454,7 +4395,7 @@ public final class GpuFoliageRenderer {
                             ),
                             state.getSeed(pos)
                         );
-                        
+
                     }
                 }
             }
@@ -4465,23 +4406,23 @@ public final class GpuFoliageRenderer {
         }
 
         MeshData mesh = builder.build();
-        
+
         if (mesh == null) {
             removeSection(key);
             return;
         }
-        
+
         try (mesh) {
-            
+
             // The mesh says how many vertices it holds and in what format, rather than dividing its size by
             // the block format's stride: another mod may widen the buffer behind our back -- Iris does, for
             // shader packs -- and the vertices would then be read at a stride they were not written at. A
             // section that comes back in another format is left to the chunk mesh instead of drawn as noise.
-            
+
             VertexFormat expected = meshedForShaderPack
                 ? IrisCompat.shaderPackMeshFormat()
                 : DefaultVertexFormat.BLOCK;
-            
+
             if (!expected.equals(mesh.drawState().format())) {
                 warnForeignVertexFormat(mesh.drawState().format());
                 removeSection(key);
@@ -4536,9 +4477,9 @@ public final class GpuFoliageRenderer {
             section.sheltered = shelter != null;
             section.listGeneration = GpuFoliageSplit.listGeneration();
             putSection(key, section);
-            
+
         }
-        
+
     }
 
 }

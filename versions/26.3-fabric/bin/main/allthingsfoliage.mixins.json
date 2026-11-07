@@ -1,5 +1,5 @@
 {
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
+	"package": "net.karto.mc2.mc2_interactivefoliage.mixin",
 	"required": true,
 	"minVersion": "0.8",
 	"compatibilityLevel": "${java}",

@@ -1,19 +1,17 @@
 {
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
-	"required": true,
-	"minVersion": "0.8",
+	"client": [
+		"SwayProximityForceMixin",
+		"compat.sodium.SodiumMeshSwapMixin",
+		"render.ClientLevelMixin",
+		"render.LevelExtractorMixin",
+		"render.SectionMeshSwapMixin"
+	],
 	"compatibilityLevel": "${java}",
 	"injectors": {
 		"defaultRequire": 1
 	},
+	"minVersion": "0.8",
 	"mixins": [],
-	"client": [
-		"BerylShadowMixin",
-		"ClientLevelMixin",
-		"LevelExtractorMixin",
-		"SectionMeshSwapMixin",
-		"SodiumMeshSwapMixin",
-		"VulkanMeshSwapMixin",
-		"SwayProximityForceMixin"
-	]
+	"package": "io.github.andrewcwhy.allthingsfoliage.mixin",
+	"required": true
 }

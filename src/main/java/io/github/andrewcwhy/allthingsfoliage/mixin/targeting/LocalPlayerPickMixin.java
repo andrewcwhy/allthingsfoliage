@@ -3,8 +3,8 @@ package io.github.andrewcwhy.allthingsfoliage.mixin.targeting;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import io.github.andrewcwhy.allthingsfoliage.FoliageSettings;
-import io.github.andrewcwhy.allthingsfoliage.client.helper.GameRendererPickHelper;
+import io.github.andrewcwhy.allthingsfoliage.Config;
+import io.github.andrewcwhy.allthingsfoliage.client.GameRendererPickHelper;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.HitResult;
@@ -23,7 +23,7 @@ abstract class LocalPlayerPickMixin {
                at = @At(value = "INVOKE",
                         target = "Lnet/minecraft/world/item/component/AttackRange;getClosesetHit(Lnet/minecraft/world/entity/Entity;FLjava/util/function/Predicate;)Lnet/minecraft/world/phys/HitResult;"))
     private static Predicate<Entity> raycastHitResult(Predicate<Entity> entitySelector) {
-        return FoliageSettings.targetAliveOnly() ? entitySelector.and(Entity::isAlive) : entitySelector;
+        return Config.targetAliveOnly() ? entitySelector.and(Entity::isAlive) : entitySelector;
     }
 
     @ModifyVariable(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;",
@@ -60,6 +60,6 @@ abstract class LocalPlayerPickMixin {
                at = @At(value = "INVOKE",
                         target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"))
     private static Predicate<Entity> pick(Predicate<Entity> entitySelector) {
-        return FoliageSettings.targetAliveOnly() ? entitySelector.and(Entity::isAlive) : entitySelector;
+        return Config.targetAliveOnly() ? entitySelector.and(Entity::isAlive) : entitySelector;
     }
 }

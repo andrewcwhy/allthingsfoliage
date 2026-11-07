@@ -114,12 +114,12 @@ public final class NeoforgeFoliageHooks {
 			return (BlockStateModel) swayParent.get(sway);
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			swayParentMissing = true;
-			AllThingsFoliage.LOGGER.warn("Could not unwrap Sway's model of a block it only pushes; Snow! Real Magic's snow "
+			AllThingsFoliage.logger.warn("Could not unwrap Sway's model of a block it only pushes; Snow! Real Magic's snow "
 					+ "may not be drawn", e);
 			return null;
 		}
 	}
-	
+
 }
 */
 //?}

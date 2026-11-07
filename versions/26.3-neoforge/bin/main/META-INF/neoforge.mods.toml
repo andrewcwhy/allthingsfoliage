@@ -48,7 +48,10 @@ config = "allthingsfoliage.iris.mixins.json"
 config = "allthingsfoliage.blockgetter.mixins.json"
 
 [[mixins]]
-config = "allthingsfoliage.pass.mixins.json"
+config = "allthingsfoliage.render.mixins.json"
+
+[[mixins]]
+config = "allthingsfoliage.targeting.mixins.json"
 
 [[accessTransformers]]
 file = "aw/26.3.cfg"

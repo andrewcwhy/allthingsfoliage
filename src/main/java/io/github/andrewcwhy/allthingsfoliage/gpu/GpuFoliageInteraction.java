@@ -3,25 +3,13 @@ package io.github.andrewcwhy.allthingsfoliage.gpu;
 import com.github.razorplay01.sway.client.SwayData;
 import com.github.razorplay01.sway.client.SwayEngine;
 import com.github.razorplay01.sway.config.SwayConfig;
-
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-
-import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
-
-import com.mojang.renderpearl.api.pipeline.UniformType;
-
 import com.mojang.blaze3d.systems.RenderSystem;
-
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import io.github.andrewcwhy.allthingsfoliage.AllThingsFoliage;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-
-import org.lwjgl.system.MemoryStack;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.lwjgl.system.MemoryStack;
 
 /**
  * Hands Sway's plant pushes to the foliage shader, so plants near the player lean away from whoever walks
@@ -91,7 +83,7 @@ public final class GpuFoliageInteraction {
     private static final Map<BlockPos, SwayData> SWAY_FORCES = findSwayForces();
 
     /** Sway's forces by block, read-only; see SWAY_FORCES. */
-    static Map<BlockPos, SwayData> swayForces() {
+    public static Map<BlockPos, SwayData> swayForces() {
         return SWAY_FORCES;
     }
 
@@ -212,7 +204,7 @@ public final class GpuFoliageInteraction {
             cell.targetZ = 0.0F;
         }
         followForces(SWAY_FORCES);
-        
+
         stepSprings(delta);
     }
 
@@ -323,7 +315,7 @@ public final class GpuFoliageInteraction {
             current.setAccessible(true);
             return (Map<BlockPos, SwayData>) current.get(null);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            AllThingsFoliage.LOGGER.warn(
+            AllThingsFoliage.logger.warn(
                 "Could not read Sway's forces; foliage drawn on the GPU will not react to entities",
                 e
             );
@@ -353,5 +345,5 @@ public final class GpuFoliageInteraction {
         }
         return size.get();
     }
-    
+
 }
