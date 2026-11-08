@@ -35,14 +35,16 @@
     "mixins": [
         "allthingsfoliage.gpu.mixins.json",
         "allthingsfoliage.iris.mixins.json",
+        "allthingsfoliage.passability.mixins.json",
         "allthingsfoliage.render.mixins.json",
         "allthingsfoliage.targeting.mixins.json"
     ],
     "depends": {
         "fabric-api": ">=0.165.2+26.3",
+        "fabric-language-kotlin": ">=1.14.2+kotlin.2.4.21",
         "fabricloader": ">=0.20.1",
         "java": ">=25",
-        "minecraft": "26.3",
+        "minecraft": ">=26.3",
         "sway": "*"
     },
     "recommends": {

@@ -4,6 +4,8 @@ import dev.kikugie.fletching_table.extension.FletchingTableExtension
 import dev.kikugie.stonecutter.StonecutterExperimentalAPI
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import javax.inject.Inject
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import net.fabricmc.loom.api.fabricapi.FabricApiExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -133,6 +135,8 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
             }
         }
 
+        configureKotlinRuntime(ctx)
+        configurePassabilityDataGeneration(ctx)
         configureFletchingTable()
         registerGenerateManifestTask(ctx)
         configureJarTask(ctx)
@@ -145,6 +149,80 @@ abstract class ModPlatformPlugin @Inject constructor() : Plugin<Project> {
         if (envTrue("PUB_MAVEN_ENABLE")) {
             apply(plugin = "com.vanniktech.maven.publish")
             configureMavenPublishing(ctx)
+        }
+    }
+
+    /** Generates shared runtime data once through Fabric's native datagen runner. */
+    private fun Project.configurePassabilityDataGeneration(ctx: Context) {
+        val generated =
+            rootProject.layout.projectDirectory.dir("src/generated/${ctx.currentMcVersion}")
+        val generatorPath = ":${ctx.currentMcVersion}-fabric:runDatagen"
+        val main = the<JavaPluginExtension>().sourceSets.named("main")
+
+        if (ctx.loader.isFabricLike) {
+            val api = extensions.getByType<FabricApiExtension>()
+            val loom = extensions.getByType<LoomGradleExtensionAPI>()
+            if (loom.runConfigs.findByName("datagen") == null) {
+                api.configureDataGeneration {
+                    outputDirectory.set(generated.asFile)
+                    addToResources.set(false)
+                    client.set(false)
+                    modId.set(ctx.modId)
+                }
+            } else {
+                loom.runConfigs.named("datagen") {
+                    property("fabric-api.datagen.output-dir", generated.asFile.absolutePath)
+                    property("fabric-api.datagen.modid", ctx.modId)
+                }
+            }
+            tasks.named("runDatagen") {
+                outputs.dir(generated)
+            }
+        }
+
+        // Do not make processResources depend on datagen: the runner needs compiled code/resources.
+        // Additional output joins the runtime classpath and the JAR after generation completes.
+        main.configure {
+            output.dir(generated.asFile)
+        }
+        tasks.withType<Jar>().configureEach {
+            if (
+                name == ctx.extension.jarTask.get() ||
+                    name == ctx.extension.sourcesJarTask.get()
+            ) {
+                dependsOn(generatorPath)
+                exclude(".cache/**")
+            }
+        }
+        tasks
+            .matching { it.name == "runClient" || it.name == "runServer" }
+            .configureEach {
+                dependsOn(generatorPath)
+            }
+    }
+
+    private fun Project.configureKotlinRuntime(ctx: Context) {
+        val requirements = ctx.extension.dependencies.required
+        requirements.maybeCreate("minecraft").apply {
+            fabricLikeVersionRange.set(">=26.3")
+            forgeLikeVersionRange.set("[26.3,)")
+        }
+        if (ctx.loader.isFabricLike) {
+            dependencies.add(
+                "implementation",
+                "net.fabricmc:fabric-language-kotlin:1.14.2+kotlin.2.4.21",
+            )
+            requirements.maybeCreate("fabric-language-kotlin").apply {
+                fabricLikeVersionRange.set(">=1.14.2+kotlin.2.4.21")
+            }
+        } else {
+            repositories.maven("https://thedarkcolour.github.io/KotlinForForge/") {
+                name = "Kotlin for Forge"
+            }
+            dependencies.add("implementation", "thedarkcolour:kotlinforforge-neoforge:6.4.0")
+            requirements.maybeCreate("kotlinforforge").apply {
+                forgeLikeVersionRange.set("[6.4.0,)")
+            }
         }
     }
 

@@ -1,12 +1,14 @@
 {
-	"client": ["LevelViewBlockGetterMixin"],
-	"compatibilityLevel": "${java}",
-	"injectors": {
-		"defaultRequire": 0
-	},
-	"minVersion": "0.8",
-	"mixins": [],
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter",
-	"plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter.BlockGetterMixinPlugin",
-	"required": false
+    "client": [
+        "LevelViewBlockGetterMixin"
+    ],
+    "compatibilityLevel": "${java}",
+    "injectors": {
+        "defaultRequire": 0
+    },
+    "minVersion": "0.8",
+    "mixins": [],
+    "package": "io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter",
+    "plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.blockgetter.BlockGetterMixinPlugin",
+    "required": false
 }

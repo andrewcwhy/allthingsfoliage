@@ -1,0 +1,4 @@
+// 26.3	-999999999-01-01T00:00:00	All Things Foliage/Tags for minecraft:block
+a4e8097fff07f9a74259d6b5dd583f3437ff28a2 data/allthingsfoliage/tags/block/passables.json
+6781e191f40fb5f382f1018faa05c6784b0cc270 data/minecraft/tags/block/prevent_mob_spawning_inside.json
+a4e8097fff07f9a74259d6b5dd583f3437ff28a2 data/minecraft/tags/block/support_override_snow_layer.json

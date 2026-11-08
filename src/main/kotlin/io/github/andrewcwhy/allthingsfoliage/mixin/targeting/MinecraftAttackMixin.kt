@@ -1,4 +1,3 @@
-
 package io.github.andrewcwhy.allthingsfoliage.mixin.targeting
 
 import io.github.andrewcwhy.allthingsfoliage.Config

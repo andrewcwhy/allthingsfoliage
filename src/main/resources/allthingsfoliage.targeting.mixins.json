@@ -1,15 +1,15 @@
 {
-	"client": [
-		"LocalPlayerPickMixin",
-		"MinecraftAttackMixin",
-		"MultiPlayerGameModeAccessor"
-	],
-	"compatibilityLevel": "${java}",
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"minVersion": "0.8",
-	"mixins": [],
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.targeting",
-	"required": true
+    "client": [
+        "LocalPlayerPickMixin",
+        "MinecraftAttackMixin",
+        "MultiPlayerGameModeAccessor"
+    ],
+    "compatibilityLevel": "${java}",
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "minVersion": "0.8",
+    "mixins": [],
+    "package": "io.github.andrewcwhy.allthingsfoliage.mixin.targeting",
+    "required": true
 }

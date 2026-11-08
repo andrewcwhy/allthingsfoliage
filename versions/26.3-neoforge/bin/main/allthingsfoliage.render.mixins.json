@@ -1,11 +1,13 @@
 {
-	"client": ["LevelPassMixin"],
-	"compatibilityLevel": "${java}",
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"minVersion": "0.8",
-	"mixins": [],
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.render",
-	"required": true
+    "client": [
+        "LevelPassMixin"
+    ],
+    "compatibilityLevel": "${java}",
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "minVersion": "0.8",
+    "mixins": [],
+    "package": "io.github.andrewcwhy.allthingsfoliage.mixin.render",
+    "required": true
 }

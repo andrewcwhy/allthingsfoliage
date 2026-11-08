@@ -90,6 +90,7 @@ sealed class Loader(val id: String) {
                             if (ctx.shaderPackSupport) {
                                 add("${ctx.modId}.iris.mixins.json")
                             }
+                            add("${ctx.modId}.passability.mixins.json")
                             add("${ctx.modId}.render.mixins.json")
                             add("${ctx.modId}.targeting.mixins.json")
                         },
@@ -182,11 +183,12 @@ sealed class Loader(val id: String) {
                     dependencies = mapOf(ctx.modId to dependencies),
                     mixins =
                         buildList {
+                            add(ForgeMixin("${ctx.modId}.blockgetter.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.gpu.mixins.json"))
                             if (ctx.shaderPackSupport) {
                                 add(ForgeMixin("${ctx.modId}.iris.mixins.json"))
                             }
-                            add(ForgeMixin("${ctx.modId}.blockgetter.mixins.json"))
+                            add(ForgeMixin("${ctx.modId}.passability.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.render.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.targeting.mixins.json"))
                         },

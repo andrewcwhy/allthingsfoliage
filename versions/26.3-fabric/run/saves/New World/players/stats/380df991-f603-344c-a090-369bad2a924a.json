@@ -1,22 +1,22 @@
 {
   "stats": {
     "minecraft:used": {
-      "minecraft:oak_leaves": 4
+      "minecraft:villager_spawn_egg": 1,
+      "minecraft:iron_sword": 2
     },
     "minecraft:custom": {
-      "minecraft:time_since_rest": 2147,
-      "minecraft:walk_one_cm": 7603,
-      "minecraft:leave_game": 1,
-      "minecraft:damage_taken": 20,
-      "minecraft:play_time": 2147,
-      "minecraft:jump": 21,
-      "minecraft:time_since_death": 2147,
-      "minecraft:sprint_one_cm": 2624,
-      "minecraft:fall_one_cm": 1164,
-      "minecraft:total_world_time": 6216,
-      "minecraft:fly_one_cm": 11167,
-      "minecraft:crouch_one_cm": 3,
-      "minecraft:sneak_time": 23
+      "minecraft:sprint_one_cm": 4956,
+      "minecraft:time_since_rest": 6322,
+      "minecraft:walk_one_cm": 16593,
+      "minecraft:total_world_time": 9949,
+      "minecraft:leave_game": 5,
+      "minecraft:fly_one_cm": 58063,
+      "minecraft:crouch_one_cm": 86,
+      "minecraft:sneak_time": 36,
+      "minecraft:play_time": 6322,
+      "minecraft:damage_dealt": 113,
+      "minecraft:jump": 78,
+      "minecraft:time_since_death": 6322
     }
   },
   "DataVersion": 5023

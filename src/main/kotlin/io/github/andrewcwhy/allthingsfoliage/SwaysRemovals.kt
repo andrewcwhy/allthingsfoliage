@@ -1,29 +1,20 @@
 package io.github.andrewcwhy.allthingsfoliage
 
 import com.github.razorplay01.sway.api.SwayAPI
+import kotlin.jvm.optionals.getOrNull
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 
 /**
- * Removes vanilla blocks that Sway incorrectly registers as interactive.
+ * Removes unsupported vanilla interactions through Sway's public API.
  *
- * These blocks retain their original behavior without foliage interactions in either renderer. The
- * GPU renderer leaves their geometry to the standard chunk renderer.
- *
- * This is a temporary compatibility workaround until Sway removes these registrations upstream. It
- * uses only Sway's public API and runs after [ModCompatRegistry] initialization, before model
- * baking.
+ * Must run after [ModCompatRegistry] initialization and before model baking.
  */
 object SwayRemovals {
-
     private var initialized = false
     private var removedCount = 0
 
-    /**
-     * Removes unsupported vanilla blocks from Sway's interaction registry.
-     *
-     * Initialization is performed only once.
-     */
+    /** Applies the compatibility workaround once. */
     @JvmStatic
     fun initialize() {
         if (initialized) {
@@ -33,45 +24,43 @@ object SwayRemovals {
         initialized = true
         removeVanillaBlocks()
 
-        AllThingsFoliage.logger.info("Sway removals: {} blocks taken out of Sway", removedCount)
-    }
-
-    /** Removes vanilla blocks that should not respond to foliage interactions. */
-    private fun removeVanillaBlocks() {
-        // Ground-cover, wall-attached, and ceiling-attached blocks.
-        removeBlocks("minecraft:moss_carpet", "minecraft:glow_lichen", "minecraft:spore_blossom")
-
-        // Rigid or structurally connected blocks that should not bend independently.
-        removeBlocks(
-                "minecraft:chorus_flower",
-                "minecraft:chorus_plant",
-                "minecraft:big_dripleaf",
-                "minecraft:big_dripleaf_stem"
+        AllThingsFoliage.logger.info(
+            "Sway removals: {} blocks taken out of Sway",
+            removedCount,
         )
     }
 
-    /**
-     * Removes interactive blocks from Sway's registry and clears their behavior pipelines.
-     *
-     * Skips invalid identifiers, missing blocks, and non-interactive blocks.
-     *
-     * @param blockIds Namespaced identifiers of the blocks to remove.
-     */
+    /** Removes interactive registrations and clears their behavior pipelines. */
     private fun removeBlocks(vararg blockIds: String) {
         for (blockId in blockIds) {
-            val identifier = Identifier.tryParse(blockId)
+            val identifier = Identifier.tryParse(blockId) ?: continue
+            val block = BuiltInRegistries.BLOCK.getOptional(identifier).getOrNull()
+                ?: continue
 
-            if (identifier == null) {
+            if (!SwayAPI.isInteractive(block)) {
                 continue
             }
 
-            BuiltInRegistries.BLOCK.getOptional(identifier).ifPresent { block ->
-                if (SwayAPI.isInteractive(block)) {
-                    SwayAPI.getRegistry().remove(block)
-                    SwayAPI.setBlockPipeline(block, emptyList())
-                    removedCount++
-                }
-            }
+            SwayAPI.getRegistry().remove(block)
+            SwayAPI.setBlockPipeline(block, emptyList())
+            removedCount++
         }
+    }
+
+    private fun removeVanillaBlocks() {
+        // Ground-cover, wall-attached, and ceiling-attached blocks.
+        removeBlocks(
+            "minecraft:glow_lichen",
+            "minecraft:moss_carpet",
+            "minecraft:spore_blossom",
+        )
+
+        // Rigid or connected blocks that should not bend independently.
+        removeBlocks(
+            "minecraft:big_dripleaf",
+            "minecraft:big_dripleaf_stem",
+            "minecraft:chorus_flower",
+            "minecraft:chorus_plant",
+        )
     }
 }

@@ -1,0 +1,31 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:not",
+      "value": {
+        "condition": "allthingsfoliage:always_leaf_walking"
+      }
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:enchanted_book",
+    "#minecraft:leaves"
+  ],
+  "result": {
+    "components": {
+      "minecraft:stored_enchantments": {
+        "allthingsfoliage:leaf_walker": 1
+      }
+    },
+    "id": "minecraft:enchanted_book"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "allthingsfoliage:always_leaf_walking"
+      }
+    }
+  ]
+}

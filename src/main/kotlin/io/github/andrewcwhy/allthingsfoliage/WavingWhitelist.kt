@@ -1,9 +1,7 @@
 package io.github.andrewcwhy.allthingsfoliage
 
 import com.google.gson.JsonParser
-import java.nio.charset.StandardCharsets
 import java.util.Collections
-import java.util.EnumMap
 import java.util.IdentityHashMap
 import net.minecraft.client.Minecraft
 import net.minecraft.core.registries.BuiltInRegistries
@@ -77,6 +75,7 @@ object WavingWhitelist {
 
         cutoutLeaves = currentCutoutLeaves
         opaqueLeavesDrawn = canDrawOpaque
+
         return true
     }
 
@@ -155,6 +154,7 @@ object WavingWhitelist {
         }
 
         val group = blocks[block]
+
         return group != null && group.enabled() && group.fieldBased
     }
 
@@ -166,6 +166,7 @@ object WavingWhitelist {
     private fun addTaggedBlocks(action: (Block) -> Unit, vararg tagIds: String) {
         for (tagId in tagIds) {
             val blockIds = mutableListOf<String>()
+
             readTag(tagId, blockIds, mutableSetOf())
             forEachBlock(action, *blockIds.toTypedArray())
         }
@@ -200,13 +201,12 @@ object WavingWhitelist {
         val separator = tagId.indexOf(':')
         val namespace = if (separator < 0) "minecraft" else tagId.substring(0, separator)
         val path = if (separator < 0) tagId else tagId.substring(separator + 1)
-        val resourcePath = "data/$namespace/tags/block/$path.json"
+        val identifier = Identifier.tryParse(tagId) ?: return
+        val resourcePath = "data/${identifier.namespace}/tags/block/${identifier.path}.json"
 
         try {
             for (source in AllThingsFoliage.xplat().readAll(resourcePath)) {
-                val values = JsonParser.parseString(
-                    String(source, StandardCharsets.UTF_8)
-                ).asJsonObject.get("values") ?: continue
+                val values = JsonParser.parseString(source.decodeToString()).asJsonObject["values"] ?: continue
 
                 for (value in values.asJsonArray) {
                     val entry = if (value.isJsonObject) {
@@ -296,10 +296,9 @@ object WavingWhitelist {
         registerLeafRestingBlocks()
         registerTags()
 
-        val counts = EnumMap<Group, Int>(Group::class.java)
-        for (group in blocks.values) {
-            counts[group] = (counts[group] ?: 0) + 1
-        }
+        val counts = Group.entries
+            .associateWith { group -> blocks.values.count { it == group } }
+            .filterValues { it > 0 }
 
         AllThingsFoliage.logger.info(
             "Waving whitelist: {}, following the leaves: {}, resting on them: {}",

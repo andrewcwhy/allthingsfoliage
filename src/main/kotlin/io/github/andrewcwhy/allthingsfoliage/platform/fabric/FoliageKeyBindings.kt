@@ -15,13 +15,15 @@ import net.minecraft.resources.Identifier
 /** Registers and handles Fabric's configuration and mod-toggle keybindings. */
 object FoliageKeyBindings {
 
-    @JvmField var openConfig: KeyMapping? = null
+    @JvmField
+    var openConfig: KeyMapping? = null
 
     @JvmField
     var resourceLocation: Identifier =
-            Identifier.fromNamespaceAndPath(AllThingsFoliage.MOD_ID, "general")
+        Identifier.fromNamespaceAndPath(AllThingsFoliage.MOD_ID, "general")
 
-    @JvmField var toggleMod: KeyMapping? = null
+    @JvmField
+    var toggleMod: KeyMapping? = null
 
     /** Registers keybindings with Fabric's keymapping API. */
     @JvmStatic
@@ -29,22 +31,22 @@ object FoliageKeyBindings {
         val category = KeyMapping.Category.register(resourceLocation)
 
         openConfig =
-                KeyMappingHelper.registerKeyMapping(
-                        KeyMapping(
-                                "key.allthingsfoliage.open_config",
-                                InputConstants.UNKNOWN.value,
-                                category
-                        )
+            KeyMappingHelper.registerKeyMapping(
+                KeyMapping(
+                    "key.allthingsfoliage.open_config",
+                    InputConstants.UNKNOWN.value,
+                    category
                 )
+            )
 
         toggleMod =
-                KeyMappingHelper.registerKeyMapping(
-                        KeyMapping(
-                                "key.allthingsfoliage.toggle",
-                                InputConstants.UNKNOWN.value,
-                                category
-                        )
+            KeyMappingHelper.registerKeyMapping(
+                KeyMapping(
+                    "key.allthingsfoliage.toggle",
+                    InputConstants.UNKNOWN.value,
+                    category
                 )
+            )
     }
 
     /** Handles keybinding actions at the end of each client tick. */
@@ -53,13 +55,13 @@ object FoliageKeyBindings {
         Config.applyDefaultRadiusOnce()
 
         val configKey =
-                checkNotNull(openConfig) { "The configuration keybinding has not been registered" }
+            checkNotNull(openConfig) { "The configuration keybinding has not been registered" }
 
         val toggleKey =
-                checkNotNull(toggleMod) { "The mod-toggle keybinding has not been registered" }
+            checkNotNull(toggleMod) { "The mod-toggle keybinding has not been registered" }
 
         while (configKey.consumeClick()) {
-            client.setScreenAndShow(ConfigScreen(null))
+            client.setScreenAndShow(ConfigScreen(client.gui.screen()))
         }
 
         while (toggleKey.consumeClick()) {
@@ -69,13 +71,13 @@ object FoliageKeyBindings {
             SwayConfig.save()
 
             client.player?.sendSystemMessage(
-                    Component.translatable(
-                            if (swayConfig.enabled) {
-                                "key.allthingsfoliage.toggle.on"
-                            } else {
-                                "key.allthingsfoliage.toggle.off"
-                            }
-                    )
+                Component.translatable(
+                    if (swayConfig.enabled) {
+                        "key.allthingsfoliage.toggle.on"
+                    } else {
+                        "key.allthingsfoliage.toggle.off"
+                    }
+                )
             )
         }
     }

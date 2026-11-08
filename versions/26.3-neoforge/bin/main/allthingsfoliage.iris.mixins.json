@@ -1,12 +1,15 @@
 {
-	"client": ["IrisRenderingPipelineAccessor", "ShaderCreatorMixin"],
-	"compatibilityLevel": "${java}",
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"minVersion": "0.8",
-	"mixins": [],
-	"package": "io.github.andrewcwhy.allthingsfoliage.mixin.compat.iris",
-	"plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.compat.iris.IrisMixinPlugin",
-	"required": true
+    "client": [
+        "IrisRenderingPipelineAccessor",
+        "ShaderCreatorMixin"
+    ],
+    "compatibilityLevel": "${java}",
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "minVersion": "0.8",
+    "mixins": [],
+    "package": "io.github.andrewcwhy.allthingsfoliage.mixin.compat.iris",
+    "plugin": "io.github.andrewcwhy.allthingsfoliage.mixin.compat.iris.IrisMixinPlugin",
+    "required": true
 }

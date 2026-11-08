@@ -36,7 +36,9 @@ platform {
 
 loom {
     accessWidenerPath =
-        rootProject.file("src/main/resources/aw/${stonecutter.current.version}.accesswidener")
+        rootProject.file(
+            "src/main/resources/aw/${stonecutter.current.version}.accesswidener"
+        )
 
     runs {
         named("client") {
@@ -48,12 +50,21 @@ loom {
 
             programArgs("--username=Dev")
 
-            // Preserve the existing Minecraft 26.3 development launch workaround.
             vmArgs(
                 "-XX:StackShadowPages=32",
                 "--add-exports",
                 "java.base/jdk.internal.misc=ALL-UNNAMED",
             )
+        }
+
+        mods {
+            register(prop("mod.id")) {
+                sourceSet(sourceSets["main"])
+
+                modFiles.from(
+                    rootProject.file("src/generated/${stonecutter.current.version}")
+                )
+            }
         }
 
         named("server") {
@@ -69,8 +80,12 @@ loom {
 fabricApi {
     configureDataGeneration {
         outputDirectory =
-            rootProject.file("versions/datagen/${stonecutter.current.version}/src/main/generated")
+            rootProject.file("src/generated/${stonecutter.current.version}")
+
+        // The common build plugin adds generated data to the runtime output.
+        addToResources = false
         client = true
+        modId = prop("mod.id")
     }
 }
 
@@ -89,17 +104,19 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:${prop("deps.minecraft")}")
 
-    implementation("net.fabricmc:fabric-loader:${prop("deps.fabric-loader")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${prop("deps.fabric-api")}")
+    implementation("net.fabricmc:fabric-loader:${prop("deps.fabric-loader")}")
     implementation("maven.modrinth:sway:${prop("deps.sway")}")
 
-    // Compile against Mod Menu and load it during development without bundling it.
     val modMenuVersion = prop("deps.modmenu")
+
     compileOnly("com.terraformersmc:modmenu:$modMenuVersion")
-    localRuntime("com.terraformersmc:modmenu:$modMenuVersion")
-
-    // Compile against optional shader integrations without bundling them.
     compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
-
     compileOnly("maven.modrinth:sodium:${prop("deps.sodium")}")
+
+    localRuntime("com.terraformersmc:modmenu:$modMenuVersion")
+}
+
+tasks.matching { it.name == "javadoc" }.configureEach {
+    dependsOn("runDatagen")
 }

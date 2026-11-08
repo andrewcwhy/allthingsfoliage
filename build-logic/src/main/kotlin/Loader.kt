@@ -68,21 +68,21 @@ sealed class Loader(val id: String) {
                     entrypoints =
                         mapOf(
                             "main" to
-                                    listOf(
-                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricEntrypoint"
-                                    ),
+                                listOf(
+                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricEntrypoint"
+                                ),
                             "client" to
-                                    listOf(
-                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricClientEntrypoint"
-                                    ),
+                                listOf(
+                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricClientEntrypoint"
+                                ),
                             "fabric-datagen" to
-                                    listOf(
-                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.datagen.FabricDataGeneratorEntrypoint"
-                                    ),
+                                listOf(
+                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.datagen.FabricDataGeneratorEntrypoint"
+                                ),
                             "modmenu" to
-                                    listOf(
-                                        "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricModMenuIntegration"
-                                    ),
+                                listOf(
+                                    "${ctx.modGroup}.${ctx.modId}.platform.fabric.FabricModMenuIntegration"
+                                ),
                         ),
                     mixins =
                         buildList {
@@ -183,13 +183,13 @@ sealed class Loader(val id: String) {
                     dependencies = mapOf(ctx.modId to dependencies),
                     mixins =
                         buildList {
+                            add(ForgeMixin("${ctx.modId}.blockgetter.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.gpu.mixins.json"))
                             if (ctx.shaderPackSupport) {
                                 add(ForgeMixin("${ctx.modId}.iris.mixins.json"))
                             }
-                            add(ForgeMixin("${ctx.modId}.blockgetter.mixins.json"))
-                            add(ForgeMixin("${ctx.modId}.render.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.passability.mixins.json"))
+                            add(ForgeMixin("${ctx.modId}.render.mixins.json"))
                             add(ForgeMixin("${ctx.modId}.targeting.mixins.json"))
                         },
                     accessTransformers =

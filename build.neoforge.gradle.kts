@@ -10,14 +10,17 @@ stonecutter {
 
 platform {
     loader = "neoforge"
+
     dependencies {
         required("minecraft") {
             forgeLikeVersionRange = "[${prop("deps.minecraft")}]"
         }
+
         required("neoforge") {
             forgeLikeVersionRange.set("[${prop("deps.neoforge")},)")
         }
-        // Wrap Sway's model after it is installed so foliage is not drawn twice.
+
+        // Install Sway's model wrapper before applying foliage compatibility.
         required("sway") {
             slug("sway")
             forgeLikeVersionRange.set("[1,)")
@@ -28,6 +31,7 @@ platform {
 
 neoForge {
     version = prop("deps.neoforge")
+
     accessTransformers.from(
         rootProject.file("src/main/resources/aw/${stonecutter.current.version}.cfg")
     )
@@ -42,12 +46,14 @@ neoForge {
 
             programArgument("--username=Dev")
 
-            // Iris uses fewer vertex bindings than NeoForge's development validator expects.
+            // Iris uses fewer vertex bindings than the development validator expects.
             systemProperty("neoforge.disableGlValidation", "true")
             systemProperty("neoforge.disableBlaze3DValidation", "true")
 
-            // Preserve the export required by Minecraft 26.3's development client.
-            jvmArguments.addAll("--add-exports", "java.base/jdk.internal.misc=ALL-UNNAMED")
+            jvmArguments.addAll(
+                "--add-exports",
+                "java.base/jdk.internal.misc=ALL-UNNAMED",
+            )
         }
 
         register("server") {
@@ -63,13 +69,9 @@ neoForge {
             sourceSet(sourceSets["main"])
         }
     }
-    sourceSets["main"]
-        .resources
-        .srcDir(
-            rootProject.file("versions/datagen/${stonecutter.current.version}/src/main/generated")
-        )
 }
 
+// Generated data is supplied by the common build plugin.
 sourceSets["main"].java {
     exclude("**/platform/fabric/**")
 }
@@ -85,12 +87,17 @@ repositories {
 dependencies {
     implementation("maven.modrinth:sway:${prop("deps.sway")}")
 
-    // Optional shader integration: available for compilation, not bundled.
     compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
-
     compileOnly("maven.modrinth:sodium:${prop("deps.sodium")}")
 }
 
 tasks.named("createMinecraftArtifacts") {
     dependsOn(tasks.named("stonecutterGenerate"))
+}
+
+val fabricDatagenTaskPath =
+    ":${stonecutter.current.version}-fabric:runDatagen"
+
+tasks.matching { it.name == "javadoc" }.configureEach {
+    dependsOn(fabricDatagenTaskPath)
 }

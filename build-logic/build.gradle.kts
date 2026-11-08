@@ -23,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly("net.fabricmc:fabric-loom:1.16.3")
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.kikugie.postprocess)
     implementation(libs.kikugie.stonecutter)
