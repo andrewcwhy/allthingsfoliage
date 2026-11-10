@@ -14,9 +14,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents
  * Integrates GPU foliage rendering with Fabric's model, chunk, and level events.
  */
 object FabricFoliageHooks {
-
     /** Registers model, rendering, and chunk lifecycle callbacks. */
-    @JvmStatic
     fun register() {
         // Resolve late-registered blocks before models are baked.
         ModelLoadingPlugin.register { _ ->

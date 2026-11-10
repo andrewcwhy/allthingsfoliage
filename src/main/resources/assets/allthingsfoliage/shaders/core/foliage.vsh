@@ -35,7 +35,7 @@ layout(location = 3) out vec2 texCoord0;
 
 void main() {
     // Relative to the camera: ModelOffset is the region's corner relative to it.
-    vec3 pos = mc2_sway(Position + ModelOffset, ModelOffset, CameraBlockPos, CameraOffset, GameTime,
+    vec3 pos = atf_sway(Position + ModelOffset, ModelOffset, CameraBlockPos, CameraOffset, GameTime,
             SwayCell, SwayWeights);
 
     gl_Position = ProjMat * ModelViewMat * vec4(pos, 1.0);

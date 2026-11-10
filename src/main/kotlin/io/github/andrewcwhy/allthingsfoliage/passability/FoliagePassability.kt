@@ -19,11 +19,11 @@ object FoliagePassability {
     private val suppressionDepth = ThreadLocal.withInitial { 0 }
 
     fun hasLeafWalker(entity: LivingEntity): Boolean {
-        return Config.passability().alwaysLeafWalking() ||
-            EnchantmentHelper.has(
-                entity.getItemBySlot(EquipmentSlot.FEET),
-                FoliageEnchantments.leafWalkerEffect,
-            )
+        return Config.passability.alwaysLeafWalking ||
+                EnchantmentHelper.has(
+                    entity.getItemBySlot(EquipmentSlot.FEET),
+                    FoliageEnchantments.leafWalkerEffect,
+                )
     }
 
     fun isPartiallyInFoliage(entity: LivingEntity): Boolean {
@@ -36,7 +36,7 @@ object FoliagePassability {
 
     fun onEntityInside(level: Level, pos: BlockPos, state: BlockState, entity: Entity) {
         val livingEntity = entity as? LivingEntity ?: return
-        val settings = Config.passability()
+        val settings = Config.passability
         if (entity is Player && entity.isCreative && entity.abilities.flying) {
             return
         }
@@ -47,18 +47,18 @@ object FoliagePassability {
             }
         }
 
-        if ((!settings.soundsPlayerOnly() || entity is Player) && state.`is`(BlockTags.LEAVES)) {
+        if ((!settings.soundsPlayerOnly || entity is Player) && state.`is`(BlockTags.LEAVES)) {
             val sound = state.soundType
             if (livingEntity.fallDistance > 3.0) {
                 entity.playSound(
                     sound.breakSound,
-                    sound.volume * 0.6f * settings.soundVolume(),
+                    sound.volume * 0.6f * settings.soundVolume,
                     sound.pitch * 0.65f,
                 )
             } else if (level.gameTime % 6L == 0L && entity.knownSpeed.lengthSqr() > 5e-7) {
                 entity.playSound(
                     sound.hitSound,
-                    sound.volume * 0.5f * settings.soundVolume(),
+                    sound.volume * 0.5f * settings.soundVolume,
                     sound.pitch * 0.45f,
                 )
             }
@@ -67,11 +67,11 @@ object FoliagePassability {
         var horizontalSpeed = 1.0f
         var verticalSpeed = 1.0f
         val foliageEntity = livingEntity as FoliageEntity
-        if (settings.alwaysLeafWalking() || !hasLeafWalker(livingEntity)) {
+        if (settings.alwaysLeafWalking || !hasLeafWalker(livingEntity)) {
             val jumping = livingEntity.isJumping || livingEntity.knownSpeed.y > 0.0
             if (!jumping && !foliageEntity.foliageSlownessHandled) {
-                horizontalSpeed = settings.speedMultiplierHorizontal()
-                verticalSpeed = settings.speedMultiplierVertical()
+                horizontalSpeed = settings.speedMultiplierHorizontal
+                verticalSpeed = settings.speedMultiplierVertical
             }
         }
         foliageEntity.foliageSlownessHandled = true
@@ -84,12 +84,12 @@ object FoliagePassability {
                 )
         }
 
-        val threshold = settings.fallDamageThreshold().toDouble()
+        val threshold = settings.fallDamageThreshold.toDouble()
         if (livingEntity.fallDistance > threshold) {
             livingEntity.fallDistance -= threshold
             livingEntity.causeFallDamage(
                 threshold,
-                1.0f - settings.fallDamageMultiplier(),
+                1.0f - settings.fallDamageMultiplier,
                 level.damageSources().fall(),
             )
         }
@@ -121,9 +121,11 @@ object FoliagePassability {
         check(BuiltInRegistries.BLOCK.all { it is FoliageBlock }) {
             "The All Things Foliage passability mixins were not applied; check loader metadata"
         }
+
         for (block in BuiltInRegistries.BLOCK) {
             val foliageBlock = block as FoliageBlock
             val passable = block.defaultBlockState().`is`(FoliageTags.passables)
+
             if (foliageBlock.foliagePassable != passable) {
                 foliageBlock.foliagePassable = passable
                 for (state in block.stateDefinition.possibleStates) {

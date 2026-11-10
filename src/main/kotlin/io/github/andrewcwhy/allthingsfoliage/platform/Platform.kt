@@ -1,4 +1,3 @@
-
 package io.github.andrewcwhy.allthingsfoliage.platform
 
 import java.io.IOException
@@ -11,15 +10,14 @@ import java.nio.file.Path
  * identification for Fabric and NeoForge.
  */
 interface Platform {
-
     /** Returns the directory containing the loader's mod configuration files. */
-    fun configDir(): Path
+    val configDir: Path
+
+    /** Returns the active Minecraft mod loader. */
+    val loader: ModLoader
 
     /** Returns whether the specified mod is loaded. */
     fun isModLoaded(modId: String): Boolean
-
-    /** Returns the active Minecraft mod loader. */
-    fun loader(): ModLoader
 
     /**
      * Reads every resource matching the specified path across available JARs.

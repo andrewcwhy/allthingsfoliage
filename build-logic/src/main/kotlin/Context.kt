@@ -38,18 +38,18 @@ class Context(
 
     val authors: List<String> by lazy {
         runCatching {
-            project.sc.properties.raw("mod", "authors").asList().map { it.toString() }
+            listOf(project.sc.properties.get<String>("mod.authors"))
+        }.getOrElse {
+            error("Missing or malformed 'mod.authors' in stonecutter.properties.toml")
         }
-            .getOrElse {
-                error("Missing or malformed 'mod.authors' in stonecutter.properties.toml")
-            }
     }
 
     val contributors: List<String> by lazy {
         runCatching {
-            project.sc.properties.raw("mod", "contributors").asList().map { it.toString() }
+            listOf(project.sc.properties.get<String>("mod.contributors"))
+        }.getOrElse {
+            emptyList()
         }
-            .getOrElse { emptyList() }
     }
 
     val sourcesUrl: String by lazy { require("mod.sources_url") }

@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.state.BlockState
  * plants must complete their cooldown before shaking again.
  */
 object SnowShakeParticles {
-
     private const val PUSH_THRESHOLD = 0.05f
     private const val MIN_PARTICLES = 2
     private const val MAX_PARTICLES = 5
@@ -40,10 +39,9 @@ object SnowShakeParticles {
     private val lastShakeTick = hashMapOf<BlockPos, Long>()
 
     /** Processes foliage pushes once per client tick. */
-    @JvmStatic
     fun tick() {
         val level = Minecraft.getInstance().level
-        val forces = GpuFoliageInteraction.swayForces()
+        val forces = GpuFoliageInteraction.swayForces
 
         if (level == null || !SnowRealMagicCompat.isAvailable() || forces.isEmpty()) {
             pushedLastTick.clear()

@@ -24,14 +24,14 @@ import org.spongepowered.asm.mixin.gen.Invoker
 interface IrisRenderingPipelineAccessor {
 
     @Accessor("resolver")
-    fun `allthingsfoliage$resolver`(): ProgramFallbackResolver
+    fun resolver(): ProgramFallbackResolver
 
     @Accessor("shadowRenderTargets")
-    fun `allthingsfoliage$shadowRenderTargets`(): ShadowRenderTargets
+    fun shadowRenderTargets(): ShadowRenderTargets
 
     @Throws(IOException::class)
     @Invoker("createShader")
-    fun `allthingsfoliage$createShader`(
+    fun createShader(
         name: String,
         key: ShaderKey,
         source: ProgramSource,
@@ -49,7 +49,7 @@ interface IrisRenderingPipelineAccessor {
 
     @Throws(IOException::class)
     @Invoker("createShadowShader")
-    fun `allthingsfoliage$createShadowShader`(
+    fun createShadowShader(
         name: String,
         key: ShaderKey,
         source: ProgramSource,

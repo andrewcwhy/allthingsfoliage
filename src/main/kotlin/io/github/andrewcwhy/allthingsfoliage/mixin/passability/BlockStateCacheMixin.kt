@@ -12,11 +12,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
 @Mixin(targets = ["net.minecraft.world.level.block.state.BlockBehaviour\$BlockStateBase\$Cache"])
 abstract class BlockStateCacheMixin {
-    @field:Final @field:Mutable @field:Shadow private lateinit var faceSturdy: BooleanArray
+    @field:Final
+    @field:Shadow
+    private lateinit var faceSturdy: BooleanArray
 
-    @field:Final @field:Mutable @field:Shadow private var isCollisionShapeFullBlock: Boolean = false
+    @field:Final
+    @field:Mutable
+    @field:Shadow
+    private var isCollisionShapeFullBlock: Boolean = false
 
-    @field:Final @field:Mutable @field:Shadow private var largeCollisionShape: Boolean = false
+    @field:Final
+    @field:Mutable
+    @field:Shadow
+    private var largeCollisionShape: Boolean = false
 
     @Inject(method = ["<init>"], at = [At("RETURN")])
     private fun updatePassableCache(state: BlockState, callback: CallbackInfo) {

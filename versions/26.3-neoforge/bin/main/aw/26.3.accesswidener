@@ -1,6 +1,0 @@
-accessWidener v2 official
-
-# Iris draws a program of its own through a pipeline it builds around it; the shader pack support builds its swaying
-# copy of the pack's program into one the same way.
-accessible method com/mojang/renderpearl/backend/opengl/GlRenderPipeline <init> (Lcom/mojang/renderpearl/backend/opengl/GlDevice;Lcom/mojang/renderpearl/backend/api/BackendRenderPipeline$CreateInfo;Lcom/mojang/renderpearl/backend/opengl/GlProgram;Lcom/mojang/renderpearl/backend/opengl/VertexArray;)V
-accessible field net/minecraft/client/renderer/RenderPipelines BLOCK_SNIPPET Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;

@@ -3,7 +3,7 @@ ao:true
 biomeBlendRadius:2
 chunkSectionFadeInTime:0.75
 cutoutLeaves:true
-enableVsync:true
+enableVsync:false
 entityDistanceScaling:1.0
 entityShadows:true
 forceUnicodeFont:false
@@ -16,8 +16,8 @@ glintStrength:0.75
 preferredGraphicsBackend:"vulkan"
 graphicsPreset:"fancy"
 prioritizeChunkUpdates:1
-fullscreen:false
-exclusiveFullscreen:false
+fullscreen:true
+exclusiveFullscreen:true
 macFullscreenMenuVisibility:false
 gamma:0.5
 guiScale:0

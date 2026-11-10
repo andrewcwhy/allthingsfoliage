@@ -4,7 +4,7 @@ import com.github.razorplay01.sway.api.SwayAPI
 import com.github.razorplay01.sway.client.behavior.BuiltinBehaviors
 import com.github.razorplay01.sway.client.behavior.multiblock.HangingVineMultiblockBehavior
 import com.github.razorplay01.sway.client.behavior.multiblock.SugarCaneMultiblockBehavior
-import java.util.Collections
+import kotlin.jvm.optionals.getOrNull
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.world.level.block.Block
@@ -17,9 +17,7 @@ import net.minecraft.world.level.block.Blocks
  * are recorded in lookup order, including blocks already supported by Sway.
  */
 object ModCompatRegistry {
-
     private val resolvedBlocks = mutableListOf<Block>()
-    private val registeredBlocksView: List<Block> = Collections.unmodifiableList(resolvedBlocks)
 
     private var initialized = false
     private var missingBlockCount = 0
@@ -29,7 +27,6 @@ object ModCompatRegistry {
     /**
      * Registers compatible foliage in the established order, only once.
      */
-    @JvmStatic
     fun initialize() {
         if (initialized) {
             return
@@ -58,13 +55,12 @@ object ModCompatRegistry {
      * The retry runs only after initialization and only while the integration
      * remains unregistered.
      */
-    @JvmStatic
     @Synchronized
     fun registerLate() {
         if (
             !initialized ||
             snowRealMagicRegistered ||
-            !AllThingsFoliage.xplat().isModLoaded("snowrealmagic")
+            !AllThingsFoliage.platform.isModLoaded("snowrealmagic")
         ) {
             return
         }
@@ -77,14 +73,6 @@ object ModCompatRegistry {
             )
         }
     }
-
-    /**
-     * Returns a read-only, live view of resolved blocks in lookup order.
-     *
-     * Some resolved blocks may already have Sway behavior and need no registration.
-     */
-    @JvmStatic
-    fun registeredBlocks(): List<Block> = registeredBlocksView
 
     private fun registerAdditionalVanilla() {
         registerPlants(
@@ -395,33 +383,35 @@ object ModCompatRegistry {
     }
 
     /**
-     * Resolves an optional block and records the result for diagnostics.
+     * Resolves an optional block and records each lookup independently.
      *
-     * Each lookup is counted independently, including repeated identifiers.
      * Failed lookups do not prevent other compatibility registrations.
      */
-    private fun resolveBlock(blockId: String): Block? = try {
-        val identifier = Identifier.parse(blockId)
-        val block = BuiltInRegistries.BLOCK
-            .getOptional(identifier)
-            .filter { it !== Blocks.AIR }
-            .orElse(null)
+    private fun resolveBlock(blockId: String): Block? {
+        return try {
+            val identifier = Identifier.parse(blockId)
+            val block =
+                BuiltInRegistries.BLOCK.getOptional(identifier)
+                    .getOrNull()
+                    ?.takeUnless { it === Blocks.AIR }
 
-        if (block != null) {
-            resolvedBlockCount++
-            resolvedBlocks.add(block)
-        } else {
+            if (block != null) {
+                resolvedBlockCount++
+                resolvedBlocks.add(block)
+            } else {
+                missingBlockCount++
+
+                AllThingsFoliage.logger.debug(
+                    "Foliage compatibility: {} not present, skipping",
+                    blockId,
+                )
+            }
+
+            block
+        } catch (_: RuntimeException) {
+            // Optional integrations tolerate invalid identifiers and registry errors.
             missingBlockCount++
-            AllThingsFoliage.logger.debug(
-                "Foliage compatibility: {} not present, skipping",
-                blockId
-            )
+            null
         }
-
-        block
-    } catch (_: RuntimeException) {
-        // Optional integrations must tolerate invalid identifiers or registry errors.
-        missingBlockCount++
-        null
     }
 }

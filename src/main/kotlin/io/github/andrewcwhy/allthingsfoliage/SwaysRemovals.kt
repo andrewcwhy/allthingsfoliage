@@ -1,9 +1,8 @@
 package io.github.andrewcwhy.allthingsfoliage
 
 import com.github.razorplay01.sway.api.SwayAPI
-import kotlin.jvm.optionals.getOrNull
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 
 /**
  * Removes unsupported vanilla interactions through Sway's public API.
@@ -31,12 +30,8 @@ object SwayRemovals {
     }
 
     /** Removes interactive registrations and clears their behavior pipelines. */
-    private fun removeBlocks(vararg blockIds: String) {
-        for (blockId in blockIds) {
-            val identifier = Identifier.tryParse(blockId) ?: continue
-            val block = BuiltInRegistries.BLOCK.getOptional(identifier).getOrNull()
-                ?: continue
-
+    private fun removeBlocks(vararg blocks: Block) {
+        for (block in blocks) {
             if (!SwayAPI.isInteractive(block)) {
                 continue
             }
@@ -50,17 +45,17 @@ object SwayRemovals {
     private fun removeVanillaBlocks() {
         // Ground-cover, wall-attached, and ceiling-attached blocks.
         removeBlocks(
-            "minecraft:glow_lichen",
-            "minecraft:moss_carpet",
-            "minecraft:spore_blossom",
+            Blocks.GLOW_LICHEN,
+            Blocks.MOSS_CARPET,
+            Blocks.SPORE_BLOSSOM,
         )
 
         // Rigid or connected blocks that should not bend independently.
         removeBlocks(
-            "minecraft:big_dripleaf",
-            "minecraft:big_dripleaf_stem",
-            "minecraft:chorus_flower",
-            "minecraft:chorus_plant",
+            Blocks.BIG_DRIPLEAF,
+            Blocks.BIG_DRIPLEAF_STEM,
+            Blocks.CHORUS_FLOWER,
+            Blocks.CHORUS_PLANT,
         )
     }
 }

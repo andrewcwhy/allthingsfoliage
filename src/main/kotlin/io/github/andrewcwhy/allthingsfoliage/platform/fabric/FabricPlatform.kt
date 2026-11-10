@@ -7,17 +7,18 @@ import net.fabricmc.loader.api.FabricLoader
 
 /** Provides Fabric-specific implementations of platform services. */
 class FabricPlatform : Platform {
+    override val configDir: Path
+        get() {
+            return FabricLoader.getInstance().configDir
+        }
 
-    override fun configDir(): Path {
-        return FabricLoader.getInstance().configDir
-    }
+    override val loader: Platform.ModLoader
+        get() {
+            return Platform.ModLoader.FABRIC
+        }
 
     override fun isModLoaded(modId: String): Boolean {
         return FabricLoader.getInstance().isModLoaded(modId)
-    }
-
-    override fun loader(): Platform.ModLoader {
-        return Platform.ModLoader.FABRIC
     }
 }
 //?}

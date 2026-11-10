@@ -14,7 +14,7 @@ class AlwaysLeafWalkingCondition : ResourceCondition {
     }
 
     override fun test(registryInfo: RegistryOps.RegistryInfoLookup?): Boolean {
-        return Config.passability().alwaysLeafWalking()
+        return Config.passability.alwaysLeafWalking
     }
 
     companion object {
@@ -35,7 +35,7 @@ class AlwaysLeafWalkingCondition : ICondition {
     }
 
     override fun test(context: ICondition.IContext): Boolean {
-        return Config.passability().alwaysLeafWalking()
+        return Config.passability.alwaysLeafWalking
     }
 
     companion object {

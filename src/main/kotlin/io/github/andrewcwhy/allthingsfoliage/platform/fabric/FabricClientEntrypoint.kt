@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
  */
 @Entrypoint("client")
 class FabricClientEntrypoint : ClientModInitializer {
-
     override fun onInitializeClient() {
         AllThingsFoliage.onInitializeClient()
 

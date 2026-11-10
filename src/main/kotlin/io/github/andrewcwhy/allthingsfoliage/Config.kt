@@ -34,24 +34,126 @@ object Config {
     private const val TRANSLATION_PREFIX = "config.allthingsfoliage."
 
     private val configPath: Path =
-            AllThingsFoliage.xplat()
-                    .configDir()
-                    .resolve("${AllThingsFoliage.MOD_ID}.json")
-                    .toAbsolutePath()
+        AllThingsFoliage.platform
+            .configDir
+            .resolve("${AllThingsFoliage.MOD_ID}.json")
+            .toAbsolutePath()
 
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
     private val data: ConfigData = load()
 
-    enum class GpuDistance(private val translationSuffix: String) {
-        @SerializedName("performance") PERFORMANCE("performance"),
-        @SerializedName("adaptive") ADAPTIVE("adaptive"),
-        @SerializedName("half") HALF("half"),
-        @SerializedName("full") FULL("full");
-
-        fun translationKey(): String {
-            return "${TRANSLATION_PREFIX}gpu.$translationSuffix"
+    val cpuRendererAvailable: Boolean
+        get() {
+            return true
         }
+
+    var gpuDistance: GpuDistance
+        get() {
+            return data.gpuDistance ?: GpuDistance.ADAPTIVE
+        }
+        set(value) {
+            data.gpuDistance = value
+        }
+
+    var gpuRenderer: Boolean
+        get() {
+            return data.gpuRenderer || !cpuRendererAvailable
+        }
+        set(value) {
+            data.gpuRenderer = value
+        }
+
+    val isDefaultWavingIntensity: Boolean
+        get() {
+            return abs(data.wavingIntensity - DEFAULT_WAVING_INTENSITY) < FLOAT_TOLERANCE
+        }
+
+    val passability: Passability
+        get() {
+            return data.passability ?: Passability()
+        }
+
+    var targetAliveOnly: Boolean
+        get() {
+            return data.targetAliveOnly
+        }
+        set(value) {
+            data.targetAliveOnly = value
+        }
+
+    var wavingFoliage: Boolean
+        get() {
+            return data.wavingFoliage
+        }
+        set(value) {
+            data.wavingFoliage = value
+        }
+
+    var wavingIntensity: Float
+        get() {
+            return data.wavingIntensity
+        }
+        set(value) {
+            data.wavingIntensity =
+                finiteClamp(
+                    value,
+                    MIN_WAVING_INTENSITY,
+                    MAX_WAVING_INTENSITY,
+                    DEFAULT_WAVING_INTENSITY,
+                )
+        }
+
+    var wavingLeaves: Boolean
+        get() {
+            return data.wavingLeaves
+        }
+        set(value) {
+            data.wavingLeaves = value
+        }
+
+    var weatherWind: Boolean
+        get() {
+            return data.weatherWind
+        }
+        set(value) {
+            data.weatherWind = value
+        }
+
+    var weatherWindDistance: GpuDistance
+        get() {
+            return data.weatherWindDistance ?: GpuDistance.HALF
+        }
+        set(value) {
+            require(value != GpuDistance.ADAPTIVE) {
+                "Adaptive distance is only supported by the GPU renderer"
+            }
+
+            data.weatherWindDistance = value
+        }
+
+    val windWalls: List<String>
+        get() {
+            return data.windWalls ?: emptyList()
+        }
+
+    enum class GpuDistance(private val translationSuffix: String) {
+        @SerializedName("performance")
+        PERFORMANCE("performance"),
+
+        @SerializedName("adaptive")
+        ADAPTIVE("adaptive"),
+
+        @SerializedName("half")
+        HALF("half"),
+
+        @SerializedName("full")
+        FULL("full");
+
+        val translationKey: String
+            get() {
+                return "${TRANSLATION_PREFIX}gpu.$translationSuffix"
+            }
     }
 
     /**
@@ -61,13 +163,13 @@ object Config {
      * Declaration order determines which matching preset is selected first.
      */
     enum class Preset(
-            private val translationSuffix: String,
-            private val interactionEnabled: Boolean,
-            private val gpuRendererEnabled: Boolean,
-            private val presetGpuDistance: GpuDistance?,
-            private val weatherWindEnabled: Boolean,
-            private val presetWeatherWindDistance: GpuDistance?,
-            private val foliageWavingEnabled: Boolean
+        private val translationSuffix: String,
+        private val interactionEnabled: Boolean,
+        private val gpuRendererEnabled: Boolean,
+        private val presetGpuDistance: GpuDistance?,
+        private val weatherWindEnabled: Boolean,
+        private val presetWeatherWindDistance: GpuDistance?,
+        private val foliageWavingEnabled: Boolean
     ) {
         CLASSIC("classic", true, false, null, false, null, false),
         LOW("low", true, true, GpuDistance.PERFORMANCE, false, null, true),
@@ -77,44 +179,47 @@ object Config {
         ULTRA("ultra", true, true, GpuDistance.FULL, true, GpuDistance.FULL, true),
         VISUALS("visuals", false, true, GpuDistance.FULL, true, GpuDistance.FULL, true);
 
+        val gpuDistance: GpuDistance?
+            get() {
+                return presetGpuDistance
+            }
+
+        val isAvailable: Boolean
+            get() {
+                return gpuRendererEnabled || Config.cpuRendererAvailable
+            }
+
+        val translationKey: String
+            get() {
+                return "${TRANSLATION_PREFIX}preset.$translationSuffix"
+            }
+
         fun applyAllButGpuDistance() {
             SwayConfig.INSTANCE.enabled = interactionEnabled
-            setGpuRenderer(gpuRendererEnabled)
-            setWeatherWind(weatherWindEnabled)
-            setWavingFoliage(foliageWavingEnabled)
+            Config.gpuRenderer = gpuRendererEnabled
+            Config.weatherWind = weatherWindEnabled
+            Config.wavingFoliage = foliageWavingEnabled
 
             if (presetWeatherWindDistance != null) {
-                setWeatherWindDistance(presetWeatherWindDistance)
+                Config.weatherWindDistance = presetWeatherWindDistance
             }
-        }
-
-        fun available(): Boolean {
-            return gpuRendererEnabled || cpuRendererAvailable()
-        }
-
-        fun gpuDistance(): GpuDistance? {
-            return presetGpuDistance
         }
 
         fun matches(currentGpuDistance: GpuDistance): Boolean {
             return SwayConfig.INSTANCE.enabled == interactionEnabled &&
-                    Config.gpuRenderer() == gpuRendererEnabled &&
+                    Config.gpuRenderer == gpuRendererEnabled &&
                     (presetGpuDistance == null || currentGpuDistance == presetGpuDistance) &&
-                    Config.weatherWind() == weatherWindEnabled &&
+                    Config.weatherWind == weatherWindEnabled &&
                     (presetWeatherWindDistance == null ||
-                            Config.weatherWindDistance() == presetWeatherWindDistance) &&
-                    Config.wavingFoliage() == foliageWavingEnabled
-        }
-
-        fun translationKey(): String {
-            return "${TRANSLATION_PREFIX}preset.$translationSuffix"
+                            Config.weatherWindDistance == presetWeatherWindDistance) &&
+                    Config.wavingFoliage == foliageWavingEnabled
         }
 
         companion object {
-            @JvmStatic
+
             fun current(currentGpuDistance: GpuDistance): Preset? {
                 for (preset in entries) {
-                    if (preset.available() && preset.matches(currentGpuDistance)) {
+                    if (preset.isAvailable && preset.matches(currentGpuDistance)) {
                         return preset
                     }
                 }
@@ -126,118 +231,51 @@ object Config {
 
     /** Stores passability preferences only; gameplay effects are implemented elsewhere. */
     class Passability {
+        var alwaysLeafWalking = false
+        var alwaysNotViewBlocking = true
 
-        private var alwaysLeafWalking = false
-        private var alwaysNotViewBlocking = true
-        private var fallDamageMultiplier = 0.5f
-        private var fallDamageThreshold = 20
-        private var headHitter = false
-        private var modifyPathFinding = true
-        private var playerOnly = false
-        private var soundVolume = 1.0f
-        private var soundsPlayerOnly = false
-        private var speedMultiplierHorizontal = 0.9f
-        private var speedMultiplierVertical = 0.9f
+        var fallDamageMultiplier = 0.5f
+            set(value) {
+                field = finiteClamp(value, 0.0f, 1.0f, 0.5f)
+            }
 
-        fun alwaysLeafWalking(): Boolean {
-            return alwaysLeafWalking
-        }
+        var fallDamageThreshold = 20
+            set(value) {
+                field = value.coerceIn(5, 255)
+            }
 
-        fun alwaysNotViewBlocking(): Boolean {
-            return alwaysNotViewBlocking
-        }
+        var headHitter = false
+        var modifyPathFinding = true
+        var playerOnly = false
 
-        fun fallDamageMultiplier(): Float {
-            return fallDamageMultiplier
-        }
+        var soundVolume = 1.0f
+            set(value) {
+                field = finiteClamp(value, 0.0f, 10.0f, 1.0f)
+            }
 
-        fun fallDamageThreshold(): Int {
-            return fallDamageThreshold
-        }
+        var soundsPlayerOnly = false
 
-        fun headHitter(): Boolean {
-            return headHitter
-        }
+        var speedMultiplierHorizontal = 0.9f
+            set(value) {
+                field = finiteClamp(value, 0.0f, 1.0f, 0.9f)
+            }
 
-        fun modifyPathFinding(): Boolean {
-            return modifyPathFinding
-        }
-
-        fun playerOnly(): Boolean {
-            return playerOnly
-        }
-
-        fun setAlwaysLeafWalking(enabled: Boolean) {
-            alwaysLeafWalking = enabled
-        }
-
-        fun setAlwaysNotViewBlocking(enabled: Boolean) {
-            alwaysNotViewBlocking = enabled
-        }
-
-        fun setFallDamageMultiplier(multiplier: Float) {
-            fallDamageMultiplier = finiteClamp(multiplier, 0.0f, 1.0f, 0.5f)
-        }
-
-        fun setFallDamageThreshold(blocks: Int) {
-            fallDamageThreshold = blocks.coerceIn(5, 255)
-        }
-
-        fun setHeadHitter(enabled: Boolean) {
-            headHitter = enabled
-        }
-
-        fun setModifyPathFinding(enabled: Boolean) {
-            modifyPathFinding = enabled
-        }
-
-        fun setPlayerOnly(enabled: Boolean) {
-            playerOnly = enabled
-        }
-
-        fun setSoundVolume(volume: Float) {
-            soundVolume = finiteClamp(volume, 0.0f, 10.0f, 1.0f)
-        }
-
-        fun setSoundsPlayerOnly(enabled: Boolean) {
-            soundsPlayerOnly = enabled
-        }
-
-        fun setSpeedMultiplierHorizontal(multiplier: Float) {
-            speedMultiplierHorizontal = finiteClamp(multiplier, 0.0f, 1.0f, 0.9f)
-        }
-
-        fun setSpeedMultiplierVertical(multiplier: Float) {
-            speedMultiplierVertical = finiteClamp(multiplier, 0.0f, 1.0f, 0.9f)
-        }
-
-        fun soundVolume(): Float {
-            return soundVolume
-        }
-
-        fun soundsPlayerOnly(): Boolean {
-            return soundsPlayerOnly
-        }
-
-        fun speedMultiplierHorizontal(): Float {
-            return speedMultiplierHorizontal
-        }
-
-        fun speedMultiplierVertical(): Float {
-            return speedMultiplierVertical
-        }
+        var speedMultiplierVertical = 0.9f
+            set(value) {
+                field = finiteClamp(value, 0.0f, 1.0f, 0.9f)
+            }
 
         internal fun sanitize() {
-            setFallDamageMultiplier(fallDamageMultiplier)
-            setFallDamageThreshold(fallDamageThreshold)
-            setSoundVolume(soundVolume)
-            setSpeedMultiplierHorizontal(speedMultiplierHorizontal)
-            setSpeedMultiplierVertical(speedMultiplierVertical)
+            // Gson writes backing fields directly, so reapply the validating setters.
+            fallDamageMultiplier = fallDamageMultiplier
+            fallDamageThreshold = fallDamageThreshold
+            soundVolume = soundVolume
+            speedMultiplierHorizontal = speedMultiplierHorizontal
+            speedMultiplierVertical = speedMultiplierVertical
         }
     }
 
     /** Applies the default interaction radius once Sway has loaded its settings. */
-    @JvmStatic
     fun applyDefaultRadiusOnce() {
         if (data.defaultRadiusApplied) {
             return
@@ -253,33 +291,7 @@ object Config {
         save()
     }
 
-    @JvmStatic
-    fun cpuRendererAvailable(): Boolean {
-        return true
-    }
-
-    @JvmStatic
-    fun gpuDistance(): GpuDistance {
-        return data.gpuDistance ?: GpuDistance.ADAPTIVE
-    }
-
-    @JvmStatic
-    fun gpuRenderer(): Boolean {
-        return data.gpuRenderer || !cpuRendererAvailable()
-    }
-
-    @JvmStatic
-    fun isDefaultWavingIntensity(): Boolean {
-        return abs(data.wavingIntensity - DEFAULT_WAVING_INTENSITY) < FLOAT_TOLERANCE
-    }
-
-    @JvmStatic
-    fun passability(): Passability {
-        return data.passability ?: Passability()
-    }
-
     /** Writes the configuration to a temporary file before replacing the current file. */
-    @JvmStatic
     fun save() {
         var temporaryPath: Path? = null
 
@@ -294,10 +306,10 @@ object Config {
 
             try {
                 Files.move(
-                        temporaryPath,
-                        configPath,
-                        StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING
+                    temporaryPath,
+                    configPath,
+                    StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING
                 )
             } catch (_: AtomicMoveNotSupportedException) {
                 Files.move(temporaryPath, configPath, StandardCopyOption.REPLACE_EXISTING)
@@ -308,9 +320,9 @@ object Config {
             }
 
             AllThingsFoliage.logger.error(
-                    "Failed to save configuration to {}",
-                    configPath,
-                    exception
+                "Failed to save configuration to {}",
+                configPath,
+                exception
             )
         } finally {
             if (temporaryPath != null) {
@@ -318,115 +330,29 @@ object Config {
                     Files.deleteIfExists(temporaryPath)
                 } catch (exception: IOException) {
                     AllThingsFoliage.logger.warn(
-                            "Failed to remove temporary configuration file {}",
-                            temporaryPath,
-                            exception
+                        "Failed to remove temporary configuration file {}",
+                        temporaryPath,
+                        exception
                     )
                 }
             }
         }
     }
 
-    @JvmStatic
-    fun setGpuDistance(distance: GpuDistance) {
-        data.gpuDistance = distance
-    }
-
-    @JvmStatic
-    fun setGpuRenderer(enabled: Boolean) {
-        data.gpuRenderer = enabled
-    }
-
-    @JvmStatic
-    fun setTargetAliveOnly(enabled: Boolean) {
-        data.targetAliveOnly = enabled
-    }
-
-    @JvmStatic
-    fun setWavingFoliage(enabled: Boolean) {
-        data.wavingFoliage = enabled
-    }
-
-    @JvmStatic
-    fun setWavingIntensity(intensity: Float) {
-        data.wavingIntensity =
-                finiteClamp(
-                        intensity,
-                        MIN_WAVING_INTENSITY,
-                        MAX_WAVING_INTENSITY,
-                        DEFAULT_WAVING_INTENSITY
-                )
-    }
-
-    @JvmStatic
-    fun setWavingLeaves(enabled: Boolean) {
-        data.wavingLeaves = enabled
-    }
-
-    @JvmStatic
-    fun setWeatherWind(enabled: Boolean) {
-        data.weatherWind = enabled
-    }
-
-    @JvmStatic
-    fun setWeatherWindDistance(distance: GpuDistance) {
-        require(distance != GpuDistance.ADAPTIVE) {
-            "Adaptive distance is only supported by the GPU renderer"
-        }
-
-        data.weatherWindDistance = distance
-    }
-
-    @JvmStatic
     fun snapInteractionRadius(radius: Float): Float {
         val clamped =
-                finiteClamp(
-                        radius,
-                        MIN_INTERACTION_RADIUS,
-                        MAX_INTERACTION_RADIUS,
-                        DEFAULT_INTERACTION_RADIUS
-                )
+            finiteClamp(
+                radius,
+                MIN_INTERACTION_RADIUS,
+                MAX_INTERACTION_RADIUS,
+                DEFAULT_INTERACTION_RADIUS
+            )
         val steps = ((clamped - MIN_INTERACTION_RADIUS) / INTERACTION_RADIUS_STEP).roundToInt()
 
         return (MIN_INTERACTION_RADIUS + steps * INTERACTION_RADIUS_STEP).coerceIn(
-                MIN_INTERACTION_RADIUS,
-                MAX_INTERACTION_RADIUS
+            MIN_INTERACTION_RADIUS,
+            MAX_INTERACTION_RADIUS
         )
-    }
-
-    @JvmStatic
-    fun targetAliveOnly(): Boolean {
-        return data.targetAliveOnly
-    }
-
-    @JvmStatic
-    fun wavingFoliage(): Boolean {
-        return data.wavingFoliage
-    }
-
-    @JvmStatic
-    fun wavingIntensity(): Float {
-        return data.wavingIntensity
-    }
-
-    @JvmStatic
-    fun wavingLeaves(): Boolean {
-        return data.wavingLeaves
-    }
-
-    @JvmStatic
-    fun weatherWind(): Boolean {
-        return data.weatherWind
-    }
-
-    @JvmStatic
-    fun weatherWindDistance(): GpuDistance {
-        return data.weatherWindDistance ?: GpuDistance.HALF
-    }
-
-    @JvmStatic
-    fun windWalls(): List<String> {
-        return data.windWalls ?: emptyList()
     }
 
     private fun finiteClamp(value: Float, minimum: Float, maximum: Float, fallback: Float): Float {
@@ -454,9 +380,9 @@ object Config {
             }
 
             AllThingsFoliage.logger.error(
-                    "Failed to load configuration from {}; using defaults",
-                    configPath,
-                    exception
+                "Failed to load configuration from {}; using defaults",
+                configPath,
+                exception
             )
             return ConfigData()
         }
@@ -478,12 +404,12 @@ object Config {
 
         fun sanitize() {
             wavingIntensity =
-                    finiteClamp(
-                            wavingIntensity,
-                            MIN_WAVING_INTENSITY,
-                            MAX_WAVING_INTENSITY,
-                            DEFAULT_WAVING_INTENSITY
-                    )
+                finiteClamp(
+                    wavingIntensity,
+                    MIN_WAVING_INTENSITY,
+                    MAX_WAVING_INTENSITY,
+                    DEFAULT_WAVING_INTENSITY
+                )
 
             if (gpuDistance == null) {
                 gpuDistance = GpuDistance.ADAPTIVE
@@ -494,12 +420,12 @@ object Config {
             }
 
             windWalls =
-                    windWalls
-                            .orEmpty()
-                            .filterNotNull()
-                            .map { it.trim { character -> Character.isWhitespace(character) } }
-                            .filter(String::isNotEmpty)
-                            .distinct()
+                windWalls
+                    .orEmpty()
+                    .filterNotNull()
+                    .map { it.trim { character -> Character.isWhitespace(character) } }
+                    .filter(String::isNotEmpty)
+                    .distinct()
 
             if (passability == null) {
                 passability = Passability()

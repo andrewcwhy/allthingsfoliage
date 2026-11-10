@@ -14,7 +14,6 @@ import net.minecraft.resources.Identifier
 
 /** Registers and handles Fabric's configuration and mod-toggle keybindings. */
 object FoliageKeyBindings {
-
     @JvmField
     var openConfig: KeyMapping? = null
 

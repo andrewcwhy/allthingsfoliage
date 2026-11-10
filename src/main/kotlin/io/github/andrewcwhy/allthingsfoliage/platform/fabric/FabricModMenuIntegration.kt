@@ -13,7 +13,6 @@ import io.github.andrewcwhy.allthingsfoliage.client.gui.screens.ConfigScreen
  */
 @Entrypoint("modmenu")
 class FabricModMenuIntegration : ModMenuApi {
-
     override fun getModConfigScreenFactory(): ConfigScreenFactory<*> {
         return ConfigScreenFactory { parent ->
             ConfigScreen(parent)

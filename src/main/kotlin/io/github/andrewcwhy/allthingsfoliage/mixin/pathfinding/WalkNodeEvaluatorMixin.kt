@@ -20,11 +20,13 @@ private fun useFoliagePathType(
     pos: BlockPos,
     callback: CallbackInfoReturnable<PathType>,
 ) {
-    if (!Config.passability().modifyPathFinding()) {
+    if (!Config.passability.modifyPathFinding) {
         return
     }
+
     val state = level.getBlockState(pos)
     val block = state.block as? FoliageBlock ?: return
+
     if (block.foliagePassable && state.fluidState.isEmpty) {
         callback.returnValue = PathType.OPEN
     }

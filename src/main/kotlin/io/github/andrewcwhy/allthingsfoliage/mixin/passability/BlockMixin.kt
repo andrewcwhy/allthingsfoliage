@@ -7,5 +7,6 @@ import org.spongepowered.asm.mixin.Unique
 
 @Mixin(Block::class)
 abstract class BlockMixin : FoliageBlock {
-    @field:Unique override var foliagePassable: Boolean = false
+    @field:Unique
+    override var foliagePassable: Boolean = false
 }

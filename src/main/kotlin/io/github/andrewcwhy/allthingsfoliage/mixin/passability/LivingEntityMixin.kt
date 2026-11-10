@@ -16,15 +16,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 @Mixin(value = [LivingEntity::class], priority = 0)
 abstract class LivingEntityMixin(type: EntityType<*>, level: Level) :
     Entity(type, level), FoliageEntity {
-    @field:Unique override var foliageSlownessHandled: Boolean = false
+    @field:Unique
+    override var foliageSlownessHandled: Boolean = false
 
-    @field:Unique override var partiallyInFoliage: Boolean = false
+    @field:Unique
+    override var partiallyInFoliage: Boolean = false
 
     @Inject(method = ["baseTick"], at = [At("HEAD")])
     private fun resetFoliageState(callback: CallbackInfo) {
         foliageSlownessHandled = false
+
         partiallyInFoliage =
-            Config.passability().headHitter() &&
-                level().getBlockStatesIfLoaded(boundingBox).anyMatch(FoliagePassability::isPassable)
+            Config.passability.headHitter &&
+                    level().getBlockStatesIfLoaded(boundingBox)
+                        .anyMatch(FoliagePassability::isPassable)
     }
 }

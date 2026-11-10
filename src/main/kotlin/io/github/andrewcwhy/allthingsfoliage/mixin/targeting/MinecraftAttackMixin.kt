@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
 
 @Mixin(Minecraft::class)
 abstract class MinecraftAttackMixin {
-
     @Shadow
     @JvmField
     var gameMode: MultiPlayerGameMode? = null
@@ -22,18 +21,13 @@ abstract class MinecraftAttackMixin {
     @JvmField
     var hitResult: HitResult? = null
 
-    /**
-     * Prevents an attack on a living entity from immediately breaking
-     * non-colliding blocks when the entity is no longer targeted.
-     */
+    /** Delays block breaking after targeting a living entity to avoid breaking foliage behind it. */
     @Inject(
         method = ["startAttack"],
-        at = [At("HEAD")]
+        at = [At("HEAD")],
     )
-    private fun `allthingsfoliage$delayBlockBreak`(
-        callback: CallbackInfoReturnable<Boolean>
-    ) {
-        if (!Config.targetAliveOnly()) {
+    private fun delayBlockBreak(callback: CallbackInfoReturnable<Boolean>) {
+        if (!Config.targetAliveOnly) {
             return
         }
 

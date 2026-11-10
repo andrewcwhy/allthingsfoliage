@@ -15,7 +15,6 @@ import net.minecraft.core.registries.BuiltInRegistries
 /** Initializes All Things Foliage through Fabric's main entrypoint. */
 @Entrypoint("main")
 class FabricEntrypoint : ModInitializer {
-
     override fun onInitialize() {
         AllThingsFoliage.onInitialize()
         Registry.register(

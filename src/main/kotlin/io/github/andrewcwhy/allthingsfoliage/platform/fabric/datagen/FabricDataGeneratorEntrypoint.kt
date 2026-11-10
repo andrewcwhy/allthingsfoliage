@@ -1,7 +1,6 @@
 package io.github.andrewcwhy.allthingsfoliage.platform.fabric.datagen
 
 //? fabric {
-
 import io.github.andrewcwhy.allthingsfoliage.datagen.FoliageBlockTagProvider
 import io.github.andrewcwhy.allthingsfoliage.datagen.FoliageEnchantmentProvider
 import io.github.andrewcwhy.allthingsfoliage.datagen.FoliageEnchantmentTagProvider

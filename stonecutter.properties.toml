@@ -1,23 +1,17 @@
 # Mod metadata
-mod.authors = ["andrewcwhy"]
-mod.channel_tag = ""
+mod.authors = "andrewcwhy"
 mod.description = "Physics-based visual interaction between entities and foliage blocks."
 mod.group = "io.github.andrewcwhy"
+mod.homepage_url = "https://github.com/andrewcwhy/allthingsfoliage"
 mod.id = "allthingsfoliage"
 mod.inception_year = "2026"
-mod.name = "All Things Foliage"
-mod.version = "0.1.0"
-
-# Project links
-mod.discord_url = ""
-mod.homepage_url = "https://github.com/andrewcwhy/allthingsfoliage"
 mod.issues_url = "https://github.com/andrewcwhy/allthingsfoliage/issues"
-mod.sources_url = "https://github.com/andrewcwhy/allthingsfoliage"
-
-# License
 mod.license.dist = "repo"
 mod.license.name = "MIT"
 mod.license.url = "https://github.com/andrewcwhy/allthingsfoliage/blob/main/LICENSE"
+mod.name = "All Things Foliage"
+mod.sources_url = "https://github.com/andrewcwhy/allthingsfoliage"
+mod.version = "0.1.0"
 
 # Maven developer metadata
 [[mod.pom.developers]]
@@ -27,21 +21,30 @@ url = "https://github.com/andrewcwhy"
 
 # Shared Fabric dependencies
 [fabric]
+deps.fabric-kotlin = "1.14.2+kotlin.2.4.21"
 deps.fabric-loader = "0.20.1"
+
+# Shared NeoForge dependencies
+[neoforge]
+deps.kotlin-for-forge = "6.4.0"
+
+# Shared dependencies — Minecraft 26.3
+["26.3"]
+deps.minecraft = "26.3"
 
 # Fabric — Minecraft 26.3
 [fabric."26.3"]
 deps.fabric-api = "0.165.2+26.3"
-deps.iris = "vTN4NRGW"           # Compile-only; not bundled.
-deps.minecraft = "26.3"
+deps.iris = "vTN4NRGW"
+deps.lithium = "mc26.3-0.26.3-fabric"
 deps.modmenu = "21.0.0"
-deps.sodium = "bAZQdGpg"         # Compile-only; not bundled.
-deps.sway = "J9WbqmZ9"
+deps.sodium = "mc26.3-0.9.2-fabric"
+deps.sway = "2.4.5-fabric+26.3"
 
 # NeoForge — Minecraft 26.3
 [neoforge."26.3"]
-deps.iris = "Ag5S66CF"       # Compile-only; not bundled.
-deps.minecraft = "26.3"
+deps.iris = "Ag5S66CF"
+deps.lithium = "mc26.3-0.26.3-neoforge"
 deps.neoforge = "26.3.0.101"
-deps.sodium = "VHtnT9Q4"     # Compile-only; not bundled.
-deps.sway = "26eSF65d"
+deps.sodium = "mc26.3-0.9.2-neoforge"
+deps.sway = "2.4.5-neoforge+26.3"

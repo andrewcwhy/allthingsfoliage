@@ -8,6 +8,15 @@ stonecutter {
     properties.tags(minecraftVersion, loader)
 }
 
+val fabricDatagenTaskPath =
+    ":${stonecutter.current.version}-fabric:runDatagen"
+
+val localRuntimeConfiguration = configurations.maybeCreate("localRuntime")
+
+configurations.named("runtimeClasspath") {
+    extendsFrom(localRuntimeConfiguration)
+}
+
 platform {
     loader = "neoforge"
 
@@ -29,6 +38,24 @@ platform {
     }
 }
 
+repositories {
+    mavenCentral()
+
+    strictMaven("https://api.modrinth.com/maven", "maven.modrinth") {
+        name = "Modrinth"
+    }
+}
+
+dependencies {
+    compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
+    compileOnly("maven.modrinth:sodium:${prop("deps.sodium")}")
+
+    implementation("maven.modrinth:sway:${prop("deps.sway")}")
+
+    add("localRuntime", "maven.modrinth:lithium:${prop("deps.lithium")}")
+    add("localRuntime", "maven.modrinth:sodium:${prop("deps.sodium")}")
+}
+
 neoForge {
     version = prop("deps.neoforge")
 
@@ -37,18 +64,23 @@ neoForge {
     )
     validateAccessTransformers = true
 
+    mods {
+        register(prop("mod.id")) {
+            sourceSet(sourceSets["main"])
+        }
+    }
+
     runs {
         register("client") {
             client()
 
             gameDirectory = file("run/")
             ideName = "NeoForge Client (${stonecutter.current.version})"
-
             programArgument("--username=Dev")
 
             // Iris uses fewer vertex bindings than the development validator expects.
-            systemProperty("neoforge.disableGlValidation", "true")
             systemProperty("neoforge.disableBlaze3DValidation", "true")
+            systemProperty("neoforge.disableGlValidation", "true")
 
             jvmArguments.addAll(
                 "--add-exports",
@@ -63,12 +95,6 @@ neoForge {
             ideName = "NeoForge Server (${stonecutter.current.version})"
         }
     }
-
-    mods {
-        register(prop("mod.id")) {
-            sourceSet(sourceSets["main"])
-        }
-    }
 }
 
 // Generated data is supplied by the common build plugin.
@@ -76,27 +102,9 @@ sourceSets["main"].java {
     exclude("**/platform/fabric/**")
 }
 
-repositories {
-    mavenCentral()
-
-    strictMaven("https://api.modrinth.com/maven", "maven.modrinth") {
-        name = "Modrinth"
-    }
-}
-
-dependencies {
-    implementation("maven.modrinth:sway:${prop("deps.sway")}")
-
-    compileOnly("maven.modrinth:iris:${prop("deps.iris")}")
-    compileOnly("maven.modrinth:sodium:${prop("deps.sodium")}")
-}
-
 tasks.named("createMinecraftArtifacts") {
     dependsOn(tasks.named("stonecutterGenerate"))
 }
-
-val fabricDatagenTaskPath =
-    ":${stonecutter.current.version}-fabric:runDatagen"
 
 tasks.matching { it.name == "javadoc" }.configureEach {
     dependsOn(fabricDatagenTaskPath)

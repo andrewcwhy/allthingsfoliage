@@ -1,4 +1,3 @@
-
 package io.github.andrewcwhy.allthingsfoliage.mixin.render
 
 import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageRenderer
@@ -10,45 +9,33 @@ import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
-/**
- * Tracks client-side block changes to keep GPU foliage geometry synchronized.
- *
- * Intercepts state changes through `setBlocksDirty`, which Sodium does not
- * override, and block entity updates through `sendBlockUpdated`.
- */
+/** Keeps GPU foliage geometry synchronized with client-side block updates. */
 @Mixin(ClientLevel::class)
 abstract class ClientLevelMixin {
-
-    /**
-     * Notifies the renderer when a block's state changes.
-     */
     @Inject(
         method = ["setBlocksDirty"],
-        at = [At("HEAD")]
+        at = [At("HEAD")],
     )
-    private fun `allthingsfoliage$onBlockChanged`(
+    private fun onBlockChanged(
         pos: BlockPos,
         oldState: BlockState,
         newState: BlockState,
-        callback: CallbackInfo
+        callback: CallbackInfo,
     ) {
         GpuFoliageRenderer.onBlockChanged(pos)
     }
 
-    /**
-     * Notifies the renderer when a block update reaches the client,
-     * including updates that bypass `setBlocksDirty`.
-     */
+    /** Includes block updates that bypass the state-change notification. */
     @Inject(
         method = ["sendBlockUpdated"],
-        at = [At("HEAD")]
+        at = [At("HEAD")],
     )
-    private fun `allthingsfoliage$onBlockUpdated`(
+    private fun onBlockUpdated(
         pos: BlockPos,
         oldState: BlockState,
         newState: BlockState,
         flags: Int,
-        callback: CallbackInfo
+        callback: CallbackInfo,
     ) {
         GpuFoliageRenderer.onBlockUpdated(pos, newState)
     }

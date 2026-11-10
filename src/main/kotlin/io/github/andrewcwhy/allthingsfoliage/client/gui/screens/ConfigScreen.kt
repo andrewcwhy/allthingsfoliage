@@ -2,11 +2,11 @@ package io.github.andrewcwhy.allthingsfoliage.client.gui.screens
 
 import com.github.razorplay01.sway.config.SwayConfig
 import io.github.andrewcwhy.allthingsfoliage.Config
-import io.github.andrewcwhy.allthingsfoliage.WavingWhitelist
+import io.github.andrewcwhy.allthingsfoliage.client.renderer.WavingWhitelist
 import io.github.andrewcwhy.allthingsfoliage.gpu.GpuFoliageRenderer
+import java.util.Locale
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
-import java.util.Locale
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.AbstractSliderButton
 import net.minecraft.client.gui.components.AbstractWidget
@@ -47,6 +47,63 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
 
     private var pendingPreset: Config.Preset? = null
     private var pendingGpuDistance: Config.GpuDistance? = null
+
+    private val displayedGpuDistance: Config.GpuDistance
+        get() {
+            return pendingGpuDistance ?: Config.gpuDistance
+        }
+
+    private val gpuRequirement: String?
+        get() {
+            return if (Config.gpuRenderer) null else "requires.gpu"
+        }
+
+    private val interactionRequirement: String?
+        get() {
+            return if (swayConfig.enabled) null else "requires.interaction"
+        }
+
+    private val isWavingAvailable: Boolean
+        get() {
+            return Config.gpuRenderer && Config.wavingFoliage
+        }
+
+    private val leafWalkingRequirement: String?
+        get() {
+            return if (Config.passability.alwaysLeafWalking) {
+                "requires.leaf_walking_off"
+            } else {
+                null
+            }
+        }
+
+    private val leavesRequirement: String?
+        get() {
+            val missingRequirement = wavingRequirement
+            if (missingRequirement != null) {
+                return missingRequirement
+            }
+
+            return if (WavingWhitelist.leavesCanWave()) null else "requires.fancy_leaves"
+        }
+
+    private val wavingRequirement: String?
+        get() {
+            if (!Config.gpuRenderer) {
+                return "requires.gpu"
+            }
+
+            return if (Config.wavingFoliage) null else "requires.waving"
+        }
+
+    private val weatherRequirement: String?
+        get() {
+            if (!Config.gpuRenderer) {
+                return "requires.gpu"
+            }
+
+            return if (Config.weatherWind) null else "requires.weather_wind"
+        }
 
     override fun init() {
         applyPendingChanges()
@@ -102,19 +159,19 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
     }
 
     private fun createGeneralOptions() {
-        val presets = Config.Preset.entries.filter { preset -> preset.available() }
+        val presets = Config.Preset.entries.filter { preset -> preset.isAvailable }
 
         presetSlider = addChoice(
             Tab.GENERAL,
             "graphics",
             "preset",
             presets,
-            Config.Preset.current(Config.gpuDistance()),
+            Config.Preset.current(Config.gpuDistance),
             { preset ->
                 if (preset == null) {
                     Component.translatable("options.graphics.custom")
                 } else {
-                    Component.translatable(preset.translationKey())
+                    Component.translatable(preset.translationKey)
                 }
             },
             { preset -> pendingPreset = preset },
@@ -126,19 +183,19 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             Tab.GENERAL,
             "graphics",
             "gpu_distance",
-            Config.GpuDistance.entries.toList(),
-            Config.gpuDistance(),
-            { distance -> Component.translatable(requireNotNull(distance).translationKey()) },
+            Config.GpuDistance.entries,
+            Config.gpuDistance,
+            { distance -> Component.translatable(requireNotNull(distance).translationKey) },
             { distance ->
                 pendingGpuDistance = distance
                 updatePresetIndicator()
             },
-            { Config.gpuRenderer() },
+            { Config.gpuRenderer },
             ::gpuRequirement
         )
 
         synchronizers.add {
-            gpuDistanceSlider.setSelected(displayedGpuDistance())
+            gpuDistanceSlider.selection = displayedGpuDistance
         }
 
         val rendererSlider = addChoice(
@@ -146,15 +203,15 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "graphics",
             "renderer",
             listOf(true, false),
-            Config.gpuRenderer(),
+            Config.gpuRenderer,
             { enabled -> Component.literal(if (enabled == true) "GPU" else "CPU") },
             { enabled ->
-                Config.setGpuRenderer(enabled)
+                Config.gpuRenderer = enabled
                 refreshState()
             },
-            { Config.cpuRendererAvailable() },
+            { Config.cpuRendererAvailable },
             {
-                if (Config.cpuRendererAvailable()) {
+                if (Config.cpuRendererAvailable) {
                     null
                 } else {
                     "requires.gpu_only"
@@ -163,15 +220,15 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         )
 
         synchronizers.add {
-            rendererSlider.setSelected(Config.gpuRenderer())
+            rendererSlider.selection = Config.gpuRenderer
         }
 
         addToggle(
             Tab.GENERAL,
             "targeting",
             "target_alive_only",
-            { Config.targetAliveOnly() },
-            { enabled -> Config.setTargetAliveOnly(enabled) }
+            { Config.targetAliveOnly },
+            { enabled -> Config.targetAliveOnly = enabled }
         )
     }
 
@@ -210,60 +267,60 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
     }
 
     private fun createPassabilityOptions() {
-        val passability = Config.passability()
+        val passability = Config.passability
 
         addToggle(
             Tab.PASSABILITY,
             "behavior",
             "always_leaf_walking",
-            { passability.alwaysLeafWalking() },
-            { enabled -> passability.setAlwaysLeafWalking(enabled) }
+            { passability.alwaysLeafWalking },
+            { enabled -> passability.alwaysLeafWalking = enabled }
         )
 
         addToggle(
             Tab.PASSABILITY,
             "behavior",
             "clear_leaf_view",
-            { passability.alwaysNotViewBlocking() },
-            { enabled -> passability.setAlwaysNotViewBlocking(enabled) }
+            { passability.alwaysNotViewBlocking },
+            { enabled -> passability.alwaysNotViewBlocking = enabled },
         )
 
         addToggle(
             Tab.PASSABILITY,
             "behavior",
             "modify_pathfinding",
-            { passability.modifyPathFinding() },
-            { enabled -> passability.setModifyPathFinding(enabled) }
+            { passability.modifyPathFinding },
+            { enabled -> passability.modifyPathFinding = enabled },
         )
 
         addToggle(
             Tab.PASSABILITY,
             "behavior",
             "passability_players_only",
-            { passability.playerOnly() },
-            { enabled -> passability.setPlayerOnly(enabled) }
+            { passability.playerOnly },
+            { enabled -> passability.playerOnly = enabled },
         )
 
         addToggle(
             Tab.PASSABILITY,
             "behavior",
             "solid_leaves_below",
-            { passability.headHitter() },
-            { enabled -> passability.setHeadHitter(enabled) }
+            { passability.headHitter },
+            { enabled -> passability.headHitter = enabled },
         )
 
-        val modifiersAvailable: () -> Boolean = { !passability.alwaysLeafWalking() }
+        val modifiersAvailable: () -> Boolean = { !passability.alwaysLeafWalking }
 
         addNumber(
             Tab.PASSABILITY,
             "fall_damage",
             "fall_damage_multiplier",
             NumericRange(0.0, 0.5, 1.0, 0.01, false),
-            { passability.fallDamageMultiplier().toDouble() },
-            { value -> passability.setFallDamageMultiplier(value.toFloat()) },
+            { passability.fallDamageMultiplier.toDouble() },
+            { value -> passability.fallDamageMultiplier = value.toFloat() },
             ::percentage,
             modifiersAvailable,
-            ::leafWalkingRequirement
+            ::leafWalkingRequirement,
         )
 
         addNumber(
@@ -271,11 +328,11 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "fall_damage",
             "fall_damage_threshold",
             NumericRange(5.0, 20.0, 255.0, 1.0, false),
-            { passability.fallDamageThreshold().toDouble() },
-            { value -> passability.setFallDamageThreshold(value.roundToInt()) },
+            { passability.fallDamageThreshold.toDouble() },
+            { value -> passability.fallDamageThreshold = value.roundToInt() },
             ::blocks,
             modifiersAvailable,
-            ::leafWalkingRequirement
+            ::leafWalkingRequirement,
         )
 
         addNumber(
@@ -283,11 +340,11 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "movement",
             "horizontal_speed",
             NumericRange(0.0, 0.9, 1.0, 0.01, false),
-            { passability.speedMultiplierHorizontal().toDouble() },
-            { value -> passability.setSpeedMultiplierHorizontal(value.toFloat()) },
+            { passability.speedMultiplierHorizontal.toDouble() },
+            { value -> passability.speedMultiplierHorizontal = value.toFloat() },
             ::percentage,
             modifiersAvailable,
-            ::leafWalkingRequirement
+            ::leafWalkingRequirement,
         )
 
         addNumber(
@@ -295,19 +352,19 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "movement",
             "vertical_speed",
             NumericRange(0.0, 0.9, 1.0, 0.01, false),
-            { passability.speedMultiplierVertical().toDouble() },
-            { value -> passability.setSpeedMultiplierVertical(value.toFloat()) },
+            { passability.speedMultiplierVertical.toDouble() },
+            { value -> passability.speedMultiplierVertical = value.toFloat() },
             ::percentage,
             modifiersAvailable,
-            ::leafWalkingRequirement
+            ::leafWalkingRequirement,
         )
 
         addToggle(
             Tab.PASSABILITY,
             "sounds",
             "sounds_players_only",
-            { passability.soundsPlayerOnly() },
-            { enabled -> passability.setSoundsPlayerOnly(enabled) }
+            { passability.soundsPlayerOnly },
+            { enabled -> passability.soundsPlayerOnly = enabled },
         )
 
         addNumber(
@@ -315,8 +372,8 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "sounds",
             "sound_volume",
             NumericRange(0.0, 1.0, 10.0, 0.05, false),
-            { passability.soundVolume().toDouble() },
-            { value -> passability.setSoundVolume(value.toFloat()) },
+            { passability.soundVolume.toDouble() },
+            { value -> passability.soundVolume = value.toFloat() },
             { value -> Component.literal("%.2f×".format(Locale.ROOT, value)) },
             ALWAYS_AVAILABLE,
             NO_REQUIREMENT,
@@ -328,23 +385,23 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             Tab.WIND,
             "ambient_waving",
             "ambient_waving",
-            { Config.wavingFoliage() },
-            { enabled -> Config.setWavingFoliage(enabled) },
-            { Config.gpuRenderer() },
-            ::gpuRequirement
+            { Config.wavingFoliage },
+            { enabled -> Config.wavingFoliage = enabled },
+            { Config.gpuRenderer },
+            ::gpuRequirement,
         )
 
         addToggle(
             Tab.WIND,
             "ambient_waving",
             "waving_leaves",
-            { Config.wavingLeaves() },
+            { Config.wavingLeaves },
             { enabled ->
-                Config.setWavingLeaves(enabled)
+                Config.wavingLeaves = enabled
                 GpuFoliageRenderer.foliageListChanged()
             },
-            { wavingAvailable() && WavingWhitelist.leavesCanWave() },
-            ::leavesRequirement
+            { isWavingAvailable && WavingWhitelist.leavesCanWave() },
+            ::leavesRequirement,
         )
 
         addNumber(
@@ -352,21 +409,21 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             "ambient_waving",
             "waving_strength",
             WAVING_STRENGTH_RANGE,
-            { Config.wavingIntensity().toDouble() },
-            { value -> Config.setWavingIntensity(value.toFloat()) },
+            { Config.wavingIntensity.toDouble() },
+            { value -> Config.wavingIntensity = value.toFloat() },
             ::decimal,
-            ::wavingAvailable,
-            ::wavingRequirement
+            ::isWavingAvailable,
+            ::wavingRequirement,
         )
 
         addToggle(
             Tab.WIND,
             "weather_wind",
             "weather_wind",
-            { Config.weatherWind() },
-            { enabled -> Config.setWeatherWind(enabled) },
-            { Config.gpuRenderer() },
-            ::gpuRequirement
+            { Config.weatherWind },
+            { enabled -> Config.weatherWind = enabled },
+            { Config.gpuRenderer },
+            ::gpuRequirement,
         )
 
         val weatherDistanceSlider = addChoice(
@@ -376,20 +433,20 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             listOf(
                 Config.GpuDistance.PERFORMANCE,
                 Config.GpuDistance.HALF,
-                Config.GpuDistance.FULL
+                Config.GpuDistance.FULL,
             ),
-            Config.weatherWindDistance(),
-            { distance -> Component.translatable(requireNotNull(distance).translationKey()) },
+            Config.weatherWindDistance,
+            { distance -> Component.translatable(requireNotNull(distance).translationKey) },
             { distance ->
-                Config.setWeatherWindDistance(distance)
+                Config.weatherWindDistance = distance
                 updatePresetIndicator()
             },
-            { Config.gpuRenderer() && Config.weatherWind() },
-            ::weatherRequirement
+            { Config.gpuRenderer && Config.weatherWind },
+            ::weatherRequirement,
         )
 
         synchronizers.add {
-            weatherDistanceSlider.setSelected(Config.weatherWindDistance())
+            weatherDistanceSlider.selection = Config.weatherWindDistance
         }
     }
 
@@ -587,7 +644,7 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
     private fun layoutVisibleRows() {
         for (tabRows in rows.values) {
             for (row in tabRows) {
-                row.setVisible(false)
+                row.isVisible = false
             }
         }
 
@@ -622,7 +679,7 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
                 resetButton.y = row.control.y
             }
 
-            row.setVisible(true)
+            row.isVisible = true
 
             previousGroup = row.group
             lastVisibleRowExclusive = index + 1
@@ -668,12 +725,8 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
 
     private fun updatePresetIndicator() {
         if (initialized && pendingPreset == null) {
-            presetSlider.setSelected(Config.Preset.current(displayedGpuDistance()))
+            presetSlider.selection = Config.Preset.current(displayedGpuDistance)
         }
-    }
-
-    private fun displayedGpuDistance(): Config.GpuDistance {
-        return pendingGpuDistance ?: Config.gpuDistance()
     }
 
     /** Applies deferred graphics changes before reinitialization, navigation, and closing. */
@@ -685,17 +738,17 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         val preset = pendingPreset
         pendingPreset = null
 
-        if (preset != null && !preset.matches(displayedGpuDistance())) {
+        if (preset != null && !preset.matches(displayedGpuDistance)) {
             preset.applyAllButGpuDistance()
-            preset.gpuDistance()?.let { distance ->
+            preset.gpuDistance?.let { distance ->
                 pendingGpuDistance = distance
             }
         }
 
         val distance = pendingGpuDistance
         if (distance != null) {
-            if (distance != Config.gpuDistance()) {
-                Config.setGpuDistance(distance)
+            if (distance != Config.gpuDistance) {
+                Config.gpuDistance = distance
             }
 
             pendingGpuDistance = null
@@ -703,51 +756,6 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
 
         if (preset != null) {
             synchronizeControls()
-        }
-    }
-
-    private fun gpuRequirement(): String? {
-        return if (Config.gpuRenderer()) null else "requires.gpu"
-    }
-
-    private fun interactionRequirement(): String? {
-        return if (swayConfig.enabled) null else "requires.interaction"
-    }
-
-    private fun wavingAvailable(): Boolean {
-        return Config.gpuRenderer() && Config.wavingFoliage()
-    }
-
-    private fun wavingRequirement(): String? {
-        if (!Config.gpuRenderer()) {
-            return "requires.gpu"
-        }
-
-        return if (Config.wavingFoliage()) null else "requires.waving"
-    }
-
-    private fun leavesRequirement(): String? {
-        val requirement = wavingRequirement()
-        if (requirement != null) {
-            return requirement
-        }
-
-        return if (WavingWhitelist.leavesCanWave()) null else "requires.fancy_leaves"
-    }
-
-    private fun weatherRequirement(): String? {
-        if (!Config.gpuRenderer()) {
-            return "requires.gpu"
-        }
-
-        return if (Config.weatherWind()) null else "requires.weather_wind"
-    }
-
-    private fun leafWalkingRequirement(): String? {
-        return if (Config.passability().alwaysLeafWalking()) {
-            "requires.leaf_walking_off"
-        } else {
-            null
         }
     }
 
@@ -836,15 +844,19 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         var headingY = -1
         var labelY = 0
 
-        fun setVisible(visible: Boolean) {
-            control.visible = visible
-            resetButton?.visible = visible
-        }
+        var isVisible: Boolean
+            get() {
+                return control.visible
+            }
+            set(value) {
+                control.visible = value
+                resetButton?.visible = value
+            }
 
         fun refreshAvailability() {
             control.active = available()
             resetButton?.active = control.active &&
-                    control is NumericSlider && !control.isDefault()
+                    control is NumericSlider && !control.isDefault
 
             val missingRequirement = requirement()
             if (tooltipInitialized && previousRequirement == missingRequirement) {
@@ -948,6 +960,11 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         private var displayedValue = 0.0
         private var messageInitialized = false
 
+        val isDefault: Boolean
+            get() {
+                return sameValue(getter(), range.defaultValue)
+            }
+
         init {
             updateMessage()
         }
@@ -979,10 +996,6 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             refreshResetButton()
         }
 
-        fun isDefault(): Boolean {
-            return sameValue(getter(), range.defaultValue)
-        }
-
         fun refresh() {
             value = range.toPosition(getter())
             updateMessage()
@@ -990,11 +1003,11 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         }
 
         private fun refreshResetButton() {
-            resetButton.active = active && !isDefault()
+            resetButton.active = active && !isDefault
         }
 
         private fun reset() {
-            if (!isDefault()) {
+            if (!isDefault) {
                 setter(range.defaultValue)
             }
 
@@ -1023,6 +1036,28 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
         private var displayedSelection: T? = null
         private var messageInitialized = false
 
+        var selection: T?
+            get() {
+                return selected
+            }
+            set(value) {
+                selected = value
+
+                // A null preset represents a custom configuration; leave its handle in place.
+                val index = if (value == null) -1 else choices.indexOf(value)
+
+                if (index >= 0) {
+                    this.value =
+                        if (choices.size == 1) {
+                            0.0
+                        } else {
+                            index.toDouble() / (choices.size - 1)
+                        }
+                }
+
+                updateMessage()
+            }
+
         init {
             updateMessage()
         }
@@ -1032,7 +1067,7 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
                 return
             }
 
-            setMessage(formatter(selected))
+            message = formatter(selected)
             displayedSelection = selected
             messageInitialized = true
         }
@@ -1059,22 +1094,6 @@ class ConfigScreen(private val parent: Screen?) : Screen(translate("title")) {
             selected = nextSelection
             updateMessage()
             onChange(nextSelection)
-        }
-
-        fun setSelected(selection: T?) {
-            selected = selection
-
-            // A null preset represents a custom configuration; leave its handle in place.
-            val index = if (selection == null) -1 else choices.indexOf(selection)
-            if (index >= 0) {
-                value = if (choices.size == 1) {
-                    0.0
-                } else {
-                    index.toDouble() / (choices.size - 1)
-                }
-            }
-
-            updateMessage()
         }
     }
 

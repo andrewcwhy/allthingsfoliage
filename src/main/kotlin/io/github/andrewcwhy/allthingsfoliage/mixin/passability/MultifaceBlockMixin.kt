@@ -14,10 +14,14 @@ import net.minecraft.world.level.block.state.BlockState
 import org.spongepowered.asm.mixin.Mixin
 
 @WrapMethod(
-    method =
-        [
-            "canAttachTo(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/Direction;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"
-        ]
+    method = [
+        "canAttachTo(" +
+                "Lnet/minecraft/world/level/BlockGetter;" +
+                "Lnet/minecraft/core/Direction;" +
+                "Lnet/minecraft/core/BlockPos;" +
+                "Lnet/minecraft/world/level/block/state/BlockState;" +
+                ")Z",
+    ],
 )
 private fun preserveAttachment(
     level: BlockGetter,
@@ -29,5 +33,6 @@ private fun preserveAttachment(
     if (!FoliagePassability.isPassable(state)) {
         return original.call(level, direction, pos, state)
     }
+
     return FoliagePassability.withOriginalCollision { original.call(level, direction, pos, state) }
 }

@@ -18,7 +18,7 @@ abstract class LeavesBlockMixin {
         level: Level,
         pos: BlockPos,
         random: RandomSource,
-        original: Operation<Void>,
+        original: Operation<Void?>,
     ) {
         FoliagePassability.withOriginalCollision { original.call(state, level, pos, random) }
     }

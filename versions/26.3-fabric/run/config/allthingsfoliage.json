@@ -3,7 +3,7 @@
   "gpuDistance": "adaptive",
   "gpuRenderer": true,
   "passability": {
-    "alwaysLeafWalking": true,
+    "alwaysLeafWalking": false,
     "alwaysNotViewBlocking": true,
     "fallDamageMultiplier": 0.5,
     "fallDamageThreshold": 20,

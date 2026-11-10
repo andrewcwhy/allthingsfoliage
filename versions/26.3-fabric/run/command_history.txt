@@ -1,2 +1,0 @@
-/execute if block ~ ~-1 ~ #minecraft:leaves run say LEAVES_OK
-/execute if block ~ ~-1 ~ #allthingsfoliage:passables run say PASSABLES_OK
